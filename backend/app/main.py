@@ -1,0 +1,52 @@
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from .db import get_db, engine, Base  # db.py から import
+
+app = FastAPI(title="DB-Ping Sample")
+
+# ── 開発中だけ: 起動時にテーブル作成しておく ──
+
+
+@app.on_event("startup")
+def on_startup() -> None:
+    # DB につながるか確認したいだけなら Ping だけでも OK
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            conn.commit()
+    except Exception as e:
+        # ログを残し、起動を失敗させる
+        raise RuntimeError(f"💥  DB 接続に失敗しました: {e}") from e
+
+    # モデルを自動で作る場合は下記を有効化
+    # Base.metadata.create_all(bind=engine)
+
+
+# ───────────────────────────
+# 1) 超シンプルな Ping エンドポイント
+# ───────────────────────────
+@app.get("/ping-db", summary="DB 接続確認")
+def ping_db(db: Session = Depends(get_db)) -> dict[str, str]:
+    """
+    DB へ `SELECT 1` を実行し、結果が返れば OK。
+    例外が出れば FastAPI が自動的に 500 を返す。
+    """
+    db.execute(text("SELECT 1"))  # 何か 1 クエリ打つだけ
+    return {"status": "ok"}
+
+
+# ───────────────────────────
+# 2) サンプルモデルを使った接続確認（任意）
+# ───────────────────────────
+# もし `models.py` で Item モデルを定義している場合は:
+# from .models import Item
+#
+# @app.post("/items")
+# def create_item(name: str, db: Session = Depends(get_db)):
+#     item = Item(name=name)
+#     db.add(item)
+#     db.commit()
+#     db.refresh(item)
+#     return item

@@ -31,7 +31,7 @@ const App: React.FC = () => {
       case 'home':
         title = `Home | ${APP_TITLE}`;
         break;
-      case 'explore': // Was 'categories'
+      case 'explore':
         title = `Explore | ${APP_TITLE}`;
         break;
       case 'library':
@@ -42,7 +42,7 @@ const App: React.FC = () => {
           title = `${selectedBook.title} | ${APP_TITLE}`;
         }
         break;
-      case 'account': // New case
+      case 'account':
         title = `Account Settings | ${APP_TITLE}`;
         break;
     }
@@ -54,7 +54,7 @@ const App: React.FC = () => {
     switch (currentView) {
       case 'home':
         return <MainContent onNavigate={handleNavigate} />;
-      case 'explore': // Was 'categories'
+      case 'explore':
         return <CategoryPage />; 
       case 'library':
         return <FavoritePage onNavigate={handleNavigate} />;
@@ -64,7 +64,7 @@ const App: React.FC = () => {
         }
         setCurrentView('home'); 
         return <MainContent onNavigate={handleNavigate} />; 
-      case 'account': // New case
+      case 'account':
         return <AccountPage />;
       default:
         return <MainContent onNavigate={handleNavigate} />;

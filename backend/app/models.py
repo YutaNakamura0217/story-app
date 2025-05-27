@@ -4,16 +4,9 @@ from datetime import datetime
 from sqlalchemy import func, TIMESTAMP, TEXT, String, Integer, Date, ForeignKey
 # If using PostgreSQL, otherwise use sqlalchemy.UUID
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
-class Base(DeclarativeBase):
-    """
-    SQLAlchemy のベースクラス。
-    モデルはこのクラスを継承して定義する。
-    """
-
-    pass
+from .db import Base  # Import Base from db.py
 
 
 class User(Base):

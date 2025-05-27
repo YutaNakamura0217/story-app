@@ -1,0 +1,5 @@
+{
+  "name": "StoryTime",
+  "description": "お気に入りの絵本を見つけて楽しむためのプラットフォーム。ホーム、カテゴリ検索、お気に入り機能を提供します。",
+  "requestFramePermissions": []
+}

@@ -55,9 +55,9 @@ const MainContent: React.FC<MainContentProps> = ({ onNavigate }) => {
   return (
     <main className="px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 flex flex-1 justify-center py-8 sm:py-12">
       <div className="layout-content-container flex flex-col w-full max-w-5xl">
-        <BookSection title="Recommended for You" books={recommendedBooksData} onNavigate={onNavigate} />
-        <BookSection title="New Arrivals" books={newArrivalsData} onNavigate={onNavigate} />
-        <BookSection title="Popular Books" books={popularBooksData} onNavigate={onNavigate} />
+        <BookSection title="あなたへのおすすめ" books={recommendedBooksData} onNavigate={onNavigate} />
+        <BookSection title="新着" books={newArrivalsData} onNavigate={onNavigate} />
+        <BookSection title="人気な本" books={popularBooksData} onNavigate={onNavigate} />
       </div>
     </main>
   );

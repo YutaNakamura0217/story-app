@@ -28,10 +28,10 @@ const StoryTimeLogoSvg: React.FC<{ className?: string }> = ({ className = "size-
 
 const Header: React.FC<HeaderProps> = ({ currentView, onNavigate }) => {
   const navLinks: { view: View; label: string }[] = [
-    { view: 'home', label: 'Home' },
-    { view: 'explore', label: 'Explore' }, // Renamed from Categories
-    { view: 'library', label: 'My Library' },
-    { view: 'account', label: 'Account' },   // New Account link
+    { view: 'home', label: 'ホーム' },
+    { view: 'explore', label: '探す' }, // Renamed from Categories
+    { view: 'library', label: 'マイライブラリ' },
+    { view: 'account', label: 'アカウント' },   // New Account link
   ];
 
   return (

@@ -1,5 +1,5 @@
 {
-  "name": "StoryTime",
-  "description": "お気に入りの絵本を見つけて楽しむためのプラットフォーム。ホーム、カテゴリ検索、お気に入り機能を提供します。",
+  "name": "哲学絵本プラットフォーム (Philosophy Picture Book Platform)",
+  "description": "An interactive platform for children to explore philosophical concepts through picture books, track their progress, and engage with thought-provoking questions. Features user authentication, book browsing, themed content, and detailed book views.",
   "requestFramePermissions": []
 }

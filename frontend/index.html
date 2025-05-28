@@ -1,49 +1,78 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account Settings | StoryTime</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <style>
-    .lexend-font {
-      font-family: "Lexend", "Noto Sans JP", "Noto Sans", sans-serif;
-    }
-    /* Global body styles from mockup */
-    body {
-      background-color: #FEF3C7; /* amber-50 */
-      color: #78350F; /* amber-900 */
-    }
-
-    /* Active navigation item style from mockup */
-    .nav-item-active {
-      color: #D97706; /* amber-600 */
-      border-bottom: 2px solid #D97706; /* amber-600 */
-      padding-bottom: 4px;
-    }
-
-    .material-icons {
-      font-size: inherit;
-    }
-  </style>
-<script type="importmap">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>哲学絵本プラットフォーム</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              amber: {
+                50: '#fffbeb',
+                100: '#fef3c7',
+                200: '#fde68a',
+                300: '#fcd34d',
+                400: '#fbbf24',
+                500: '#f59e0b', // Main accent/button
+                600: '#d97706', // Button hover
+                700: '#b45309', // Text, links
+                800: '#92400e', // Footer bg
+                900: '#78350f', // Headings, primary text
+              },
+              // Keep some of the old palette if needed for specific UI elements not covered by amber
+              // or for mapping. For now, focusing on amber.
+              primary: { // Remap to amber for consistency with existing components
+                light: '#fde68a', // amber-200
+                DEFAULT: '#f59e0b', // amber-500
+                dark: '#d97706',   // amber-600
+              },
+              secondary: { // Grays can be kept for neutral elements
+                light: '#F3F4F6', 
+                DEFAULT: '#E5E7EB', 
+                dark: '#374151', 
+              },
+              accent: { // Remap to a brighter amber or keep if distinct
+                DEFAULT: '#fbbf24', // amber-400
+                dark: '#f59e0b',   // amber-500
+              },
+              background: '#fffbeb', // amber-50 (main page background)
+              card: '#FFFFFF', 
+              textPrimary: '#78350f', // amber-900
+              textSecondary: '#b45309', // amber-700
+              success: '#10B981',
+              warning: '#f59e0b', // amber-500
+              danger: '#EF4444',
+              info: '#3B82F6',
+            },
+            fontFamily: {
+              sans: ['Lexend', 'Noto Sans JP', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <script type="importmap">
 {
   "imports": {
-    "@google/genai": "https://esm.sh/@google/genai@^1.1.0",
-    "react/": "https://esm.sh/react@^19.1.0/",
     "react": "https://esm.sh/react@^19.1.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/"
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.6.1",
+    "@heroicons/react/": "https://esm.sh/@heroicons/react@^2.2.0/"
   }
 }
 </script>
 </head>
-<body class="lexend-font">
-  <div id="root" class="w-full h-full"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  <body class="bg-amber-50 text-amber-900">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
 </html><link rel="stylesheet" href="index.css">
 <script src="index.tsx" type="module"></script>

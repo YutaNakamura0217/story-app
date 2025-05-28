@@ -1,1 +1,0 @@
-# Philosophy Picture Book Platform

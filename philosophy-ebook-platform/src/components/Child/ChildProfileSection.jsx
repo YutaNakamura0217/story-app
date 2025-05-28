@@ -1,34 +1,47 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // Import Link
 
 function ChildProfileSection({
+  childId = "example-child-id", // Added childId prop for dynamic linking
   childName = "Child's Name Placeholder",
   age = 8,
-  preferences = "Loves adventure stories and puzzles",
+  preferences = "Loves adventure stories, mythical creatures, and asking 'why?' about everything.",
   avatarUrl = "https://via.placeholder.com/150?text=Child+Avatar",
   overallProgress = 65, // Percentage
   stats = { booksRead: 15, hoursRead: 20, questionsAnswered: 30 },
   achievementsCount = 5
 }) {
   return (
-    <section style={{ display: 'flex', padding: '20px', borderBottom: '1px solid #eee', alignItems: 'center' }}>
-      <img src={avatarUrl} alt={`${childName} avatar`} style={{ width: '150px', height: '150px', borderRadius: '50%', marginRight: '20px' }} />
-      <div style={{ flexGrow: 1 }}>
-        <h2>{childName}</h2>
-        <p>Age: {age}</p>
-        <p>Preferences: {preferences}</p>
-        <button>Edit Child Info</button> {/* Link to /children/:id/edit */}
+    <section className="flex flex-col md:flex-row items-center p-6 bg-white shadow-xl rounded-lg my-8 mx-auto max-w-5xl">
+      <img 
+        src={avatarUrl} 
+        alt={`${childName} avatar`} 
+        className="w-24 h-24 md:w-36 md:h-36 rounded-full shadow-md mb-4 md:mb-0 md:mr-8 object-cover border-4 border-indigo-200" 
+      />
+      <div className="flex-grow text-center md:text-left">
+        <h2 className="text-2xl md:text-3xl font-bold text-indigo-700 mb-1">{childName}</h2>
+        <p className="text-md text-gray-600 mb-1">Age: {age}</p>
+        <p className="text-sm text-gray-500 mb-3 leading-relaxed md:max-w-md">{preferences}</p>
+        <Link 
+          to={`/children/${childId}/edit`} // Example navigation, route not defined yet
+          className="px-4 py-2 text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-150"
+        >
+          Edit Child Info
+        </Link>
       </div>
-      <div style={{ textAlign: 'center', marginLeft: '20px' }}>
-        {/* Basic progress circle placeholder */}
-        <div style={{
-          width: '100px', height: '100px', borderRadius: '50%', border: '5px solid #76c7c0',
-          display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '20px', margin: '0 auto 10px auto'
-        }}>
+      <div className="text-center md:text-right mt-6 md:mt-0 md:ml-8 flex-shrink-0">
+        <div 
+          className="w-24 h-24 md:w-28 md:h-28 rounded-full border-8 border-blue-500 flex items-center justify-center text-2xl md:text-3xl font-bold text-blue-600 mx-auto md:mx-0 mb-3 shadow-inner bg-blue-50"
+          title={`Overall Progress: ${overallProgress}%`}
+        >
           {overallProgress}%
         </div>
-        <p><strong>{stats.booksRead}</strong> Books Read | <strong>{stats.hoursRead}</strong> Hours Read</p>
-        <p><strong>{stats.questionsAnswered}</strong> Questions Answered</p>
-        <p><strong>{achievementsCount}</strong> Achievements Unlocked</p>
+        <div className="text-xs text-gray-600 space-y-0.5">
+          <p><strong className="text-gray-700">{stats.booksRead}</strong> Books Read</p>
+          <p><strong className="text-gray-700">{stats.hoursRead}</strong> Hours Read</p>
+          <p><strong className="text-gray-700">{stats.questionsAnswered}</strong> Questions Answered</p>
+          <p><strong className="text-gray-700">{achievementsCount}</strong> Achievements Unlocked</p>
+        </div>
       </div>
     </section>
   );

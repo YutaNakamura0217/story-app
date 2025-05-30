@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, date
 from typing import List, Optional, TypeVar, Generic
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 # Import enums from models.py
 # Assuming models.py is in the same directory or adjust path accordingly
@@ -66,31 +66,36 @@ class ThemeRead(ThemeBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # User Schemas
 
 
 class UserBase(BaseModel):
-    email: EmailStr = Field(..., example="user@example.com")
-    name: str = Field(..., min_length=1, max_length=255, example="Taro Yamada")
+    email: EmailStr = Field(..., json_schema_extra={
+                            "example": "user@example.com"})
+    name: str = Field(..., min_length=1, max_length=255,
+                      json_schema_extra={"example": "Taro Yamada"})
     avatar_url: Optional[str] = Field(
-        None, example="https://example.com/avatar.png")
-    introduction: Optional[str] = Field(None, example="Hello, I am Taro.")
+        None, json_schema_extra={"example": "https://example.com/avatar.png"})
+    introduction: Optional[str] = Field(
+        None, json_schema_extra={"example": "Hello, I am Taro."})
 
 
 class UserCreate(UserBase):
-    password: str = Field(..., min_length=8, example="securepassword123")
+    password: str = Field(..., min_length=8, json_schema_extra={
+                          "example": "securepassword123"})
 
 
 class UserUpdate(BaseModel):
-    email: Optional[EmailStr] = Field(None, example="user@example.com")
+    email: Optional[EmailStr] = Field(
+        None, json_schema_extra={"example": "user@example.com"})
     name: Optional[str] = Field(
-        None, min_length=1, max_length=255, example="Taro Yamada Updated")
+        None, min_length=1, max_length=255, json_schema_extra={"example": "Taro Yamada Updated"})
     avatar_url: Optional[str] = Field(
-        None, example="https://example.com/new_avatar.png")
-    introduction: Optional[str] = Field(None, example="Updated introduction.")
+        None, json_schema_extra={"example": "https://example.com/new_avatar.png"})
+    introduction: Optional[str] = Field(
+        None, json_schema_extra={"example": "Updated introduction."})
     # Allow tier update if necessary, though not explicitly in plan for this schema
     tier: Optional[UserTierEnum] = None
 
@@ -101,8 +106,7 @@ class UserRead(UserBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserEmailUpdate(BaseModel):
@@ -149,8 +153,7 @@ class UserSettingsRead(UserSettingsBase):
     user_id: uuid.UUID
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Child Schemas
@@ -177,8 +180,7 @@ class ChildRead(ChildBase):
     updated_at: datetime
     # Potentially extended progress details here, as per plan
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Book Schemas
 
@@ -228,8 +230,7 @@ class BookRead(BookBase):  # For lists, dashboards
     id: uuid.UUID
     themes: Optional[List[ThemeRead]] = []  # Simplified theme info for lists
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Book Page Schemas
 
@@ -256,8 +257,7 @@ class BookPageRead(BookPageBase):
     id: uuid.UUID
     book_id: uuid.UUID
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Book TOC Item Schemas
 
@@ -280,8 +280,7 @@ class BookTocItemRead(BookTocItemBase):
     id: uuid.UUID
     book_id: uuid.UUID
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Review Schemas
 
@@ -290,8 +289,7 @@ class ReviewerInfo(BaseModel):  # For embedding in ReviewRead
     id: uuid.UUID
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReviewBase(BaseModel):
@@ -317,8 +315,7 @@ class ReviewRead(ReviewBase):
     updated_at: datetime
     user: Optional[ReviewerInfo] = None  # Embed user info
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # For BookDetailRead, to show summary
 
@@ -337,8 +334,7 @@ class BookDetailRead(BookRead):  # Inherits fields from BookRead
     reviews_summary: Optional[ReviewSummary] = None
     # related_books: Optional[List[BookRead]] = [] # Plan shows this, can be added later
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # User Favorite Schemas (mostly for response, creation/deletion by path)
@@ -355,8 +351,7 @@ class UserFavoriteRead(UserFavoriteBase):
     favorited_at: datetime
     book: BookRead  # Embed book info
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # User Book Progress Schemas
@@ -374,8 +369,7 @@ class UserBookBookmarkRead(UserBookBookmarkBase):
     progress_id: uuid.UUID
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserBookNoteBase(BaseModel):
@@ -394,8 +388,7 @@ class UserBookNoteRead(UserBookNoteBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserBookProgressBase(BaseModel):
@@ -403,9 +396,8 @@ class UserBookProgressBase(BaseModel):
 
 
 class UserBookProgressCreate(UserBookProgressBase):
-    user_id: uuid.UUID
-    book_id: uuid.UUID
-    child_id: Optional[uuid.UUID] = None
+    # user_id, book_id, and child_id are passed directly to the CRUD function
+    pass
 
 
 class BookProgressUpdatePage(BaseModel):  # As per plan
@@ -421,8 +413,7 @@ class UserBookProgressRead(UserBookProgressBase):
     notes: List[UserBookNoteRead] = []
     last_read_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Learning Activity Schemas
@@ -434,8 +425,8 @@ class LearningActivityBase(BaseModel):
 
 
 class LearningActivityCreate(LearningActivityBase):
-    user_id: uuid.UUID  # Set by system
-    child_id: Optional[uuid.UUID] = None  # Set by system if applicable
+    user_id: uuid.UUID
+    child_id: Optional[uuid.UUID] = None
 
 
 class LearningActivityRead(LearningActivityBase):
@@ -444,11 +435,10 @@ class LearningActivityRead(LearningActivityBase):
     child_id: Optional[uuid.UUID] = None
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Update forward refs for Pydantic models that reference each other before definition
-Token.update_forward_refs()
-# Add other .update_forward_refs() if circular dependencies arise with more complex nesting
+Token.model_rebuild()
+# Add other .model_rebuild() if circular dependencies arise with more complex nesting
 # For now, UserRead in Token is the main one.

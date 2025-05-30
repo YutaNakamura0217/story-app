@@ -7,8 +7,9 @@ from .. import models, schemas
 
 
 def create_child(db: Session, child: schemas.ChildCreate, user_id: uuid.UUID) -> models.Child:
+    child_data = child.model_dump()
     db_child = models.Child(
-        **child.dict(),
+        **child_data,
         user_id=user_id
     )
     db.add(db_child)
@@ -26,7 +27,7 @@ def get_children_by_user(db: Session, user_id: uuid.UUID, skip: int = 0, limit: 
 
 
 def update_child(db: Session, db_child: models.Child, child_in: schemas.ChildUpdate) -> models.Child:
-    update_data = child_in.dict(exclude_unset=True)
+    update_data = child_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_child, field, value)
 

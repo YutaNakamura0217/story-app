@@ -1,4 +1,4 @@
-from backend.app.db import Base
+from backend.app.db import Base, DATABASE_URL as APP_CONFIGURED_DATABASE_URL
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -23,6 +23,18 @@ if config.config_file_name is not None:
 import backend.app.models  # noqa
 
 target_metadata = Base.metadata
+
+# Override sqlalchemy.url from alembic.ini with the one determined by db.py (which is test-aware)
+# This ensures Alembic targets the same database as the application based on the TESTING env var.
+if APP_CONFIGURED_DATABASE_URL:
+    config.set_main_option("sqlalchemy.url", APP_CONFIGURED_DATABASE_URL)
+else:
+    # This case should ideally not happen if db.py is correctly setting DATABASE_URL
+    # and .env has the necessary fallbacks or direct values.
+    # For safety, you might log a warning or raise an error if needed.
+    # Or raise an error: raise ValueError("Database URL for Alembic could not be determined.")
+    pass
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

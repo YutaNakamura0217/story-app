@@ -8,8 +8,9 @@ from .. import models, schemas
 
 
 def create_review(db: Session, review: schemas.ReviewCreate, book_id: uuid.UUID, user_id: uuid.UUID) -> models.Review:
+    review_data = review.model_dump()
     db_review = models.Review(
-        **review.dict(),
+        **review_data,
         book_id=book_id,
         user_id=user_id
     )
@@ -48,7 +49,7 @@ def get_reviews_by_user(
 
 
 def update_review(db: Session, db_review: models.Review, review_in: schemas.ReviewUpdate) -> models.Review:
-    update_data = review_in.dict(exclude_unset=True)
+    update_data = review_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_review, field, value)
 

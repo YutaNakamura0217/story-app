@@ -12,10 +12,26 @@ from sqlalchemy.orm import (
 )
 
 load_dotenv()
-DATABASE_URL: str = os.getenv(
-    "DATABASE_URL",
-    "postgresql+psycopg2://postgres:Yuki0217@localhost:5432/story_app",
-)
+
+# Determine if running in test mode
+TESTING_MODE = os.getenv("TESTING", "false").lower() == "true"
+
+if TESTING_MODE:
+    DATABASE_URL = os.getenv("TEST_DATABASE_URL")
+    if not DATABASE_URL:
+        raise ValueError(
+            "TEST_DATABASE_URL not set in environment for testing mode")
+    # Ensure the test URL uses psycopg2 driver if not specified, or adjust as needed
+    if "postgresql://" in DATABASE_URL and "psycopg2" not in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace(
+            "postgresql://", "postgresql+psycopg2://")
+else:
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    if not DATABASE_URL:
+        # Fallback if DATABASE_URL is not in .env for some reason (though it should be)
+        DATABASE_URL = "postgresql+psycopg2://postgres:Yuki0217@localhost:5432/story_app"
+
+
 engine = create_engine(
     DATABASE_URL,
     echo=False,

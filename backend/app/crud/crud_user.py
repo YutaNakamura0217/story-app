@@ -45,14 +45,15 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db_user_settings = models.UserSettings(user_id=db_user.id)
     db.add(db_user_settings)
     db.commit()
-    # db.refresh(db_user_settings) # Not strictly necessary to refresh settings here
-    # db.refresh(db_user) # Refresh user again to get user_settings relationship populated if needed immediately
+    db.refresh(db_user_settings)
+    # Refresh user to ensure user_settings relationship is populated
+    db.refresh(db_user)
 
     return db_user
 
 
 def update_user(db: Session, db_user: models.User, user_in: schemas.UserUpdate) -> models.User:
-    update_data = user_in.dict(exclude_unset=True)
+    update_data = user_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_user, field, value)
 
@@ -73,7 +74,7 @@ def update_user_settings(
     db_user_settings: models.UserSettings,
     settings_in: schemas.UserSettingsUpdate
 ) -> models.UserSettings:
-    update_data = settings_in.dict(exclude_unset=True)
+    update_data = settings_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_user_settings, field, value)
 

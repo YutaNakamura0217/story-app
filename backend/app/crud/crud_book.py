@@ -74,7 +74,7 @@ def get_books(
 
 
 def update_book(db: Session, db_book: models.Book, book_in: schemas.BookUpdate) -> models.Book:
-    update_data = book_in.dict(exclude_unset=True)
+    update_data = book_in.model_dump(exclude_unset=True)
 
     if "theme_ids" in update_data:
         theme_ids = update_data.pop("theme_ids")
@@ -110,7 +110,19 @@ def delete_book(db: Session, db_book: models.Book) -> models.Book:
 
 # BookPage CRUD operations
 def create_book_page(db: Session, page: schemas.BookPageCreate, book_id: uuid.UUID) -> models.BookPage:
-    db_page = models.BookPage(**page.dict(), book_id=book_id)
+    # book_id is already in page schema (schemas.BookPageCreate)
+    # Ensure the book_id in the page schema matches the book_id parameter for consistency, if desired.
+    # For now, we assume page.book_id is correctly set by the caller (e.g., test or route).
+    # If page.book_id might differ from the book_id param, you might want to prioritize one or raise an error.
+    # page_dict = page.dict() # Pydantic v1
+    page_dict = page.model_dump()  # Pydantic v2
+    # If the `book_id` parameter to this function is the source of truth,
+    # ensure it's used, overriding or setting what's in page_dict.
+    # page_dict['book_id'] = book_id # This would ensure the param `book_id` is used.
+    # However, since BookPageCreate schema requires book_id, it should already be in page_dict.
+    # The original error was `got multiple values for keyword argument 'book_id'`,
+    # so we remove the explicit `book_id=book_id` from the constructor call.
+    db_page = models.BookPage(**page_dict)
     db.add(db_page)
     db.commit()
     db.refresh(db_page)
@@ -126,7 +138,7 @@ def get_book_pages_by_book(db: Session, book_id: uuid.UUID, skip: int = 0, limit
 
 
 def update_book_page(db: Session, db_page: models.BookPage, page_in: schemas.BookPageUpdate) -> models.BookPage:
-    update_data = page_in.dict(exclude_unset=True)
+    update_data = page_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_page, field, value)
     db.add(db_page)
@@ -143,7 +155,16 @@ def delete_book_page(db: Session, db_page: models.BookPage) -> models.BookPage:
 
 # BookTocItem CRUD operations
 def create_book_toc_item(db: Session, toc_item: schemas.BookTocItemCreate, book_id: uuid.UUID) -> models.BookTocItem:
-    db_toc_item = models.BookTocItem(**toc_item.dict(), book_id=book_id)
+    # Similar to BookPageCreate, BookTocItemCreate schema includes book_id.
+    # We'll use model_dump() and assume book_id from the schema is the one to use.
+    # The explicit book_id parameter to this function could be used for validation if needed.
+    toc_item_data = toc_item.model_dump()
+    # Ensure the book_id from the parameter is used if it's the source of truth,
+    # or validate that toc_item_data['book_id'] matches the book_id parameter.
+    # For now, assuming toc_item_data['book_id'] is correct as per schema.
+    # If the function's book_id param should override:
+    # toc_item_data['book_id'] = book_id
+    db_toc_item = models.BookTocItem(**toc_item_data)
     db.add(db_toc_item)
     db.commit()
     db.refresh(db_toc_item)
@@ -159,7 +180,7 @@ def get_book_toc_items_by_book(db: Session, book_id: uuid.UUID, skip: int = 0, l
 
 
 def update_book_toc_item(db: Session, db_toc_item: models.BookTocItem, toc_item_in: schemas.BookTocItemUpdate) -> models.BookTocItem:
-    update_data = toc_item_in.dict(exclude_unset=True)
+    update_data = toc_item_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_toc_item, field, value)
     db.add(db_toc_item)

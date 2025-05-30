@@ -8,7 +8,7 @@ from .. import models, schemas
 
 
 def create_theme(db: Session, theme: schemas.ThemeCreate) -> models.Theme:
-    db_theme = models.Theme(**theme.dict())
+    db_theme = models.Theme(**theme.model_dump())
     db.add(db_theme)
     db.commit()
     db.refresh(db_theme)
@@ -89,7 +89,7 @@ def get_themes(db: Session, skip: int = 0, limit: int = 100) -> List[models.Them
 
 
 def update_theme(db: Session, db_theme: models.Theme, theme_in: schemas.ThemeUpdate) -> models.Theme:
-    update_data = theme_in.dict(exclude_unset=True)
+    update_data = theme_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_theme, field, value)
 

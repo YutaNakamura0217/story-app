@@ -1,6 +1,6 @@
 import uuid
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone  # Added timezone
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -34,7 +34,7 @@ def get_or_create_progress(db: Session, user_id: uuid.UUID, book_id: uuid.UUID, 
             book_id=book_id,
             child_id=child_id,
             current_page=1,  # Default starting page
-            last_read_at=datetime.utcnow()
+            last_read_at=datetime.now(timezone.utc)
         )
         db.add(db_progress)
         db.commit()
@@ -46,7 +46,8 @@ def get_or_create_progress(db: Session, user_id: uuid.UUID, book_id: uuid.UUID, 
 
 def update_progress_page(db: Session, db_progress: models.UserBookProgress, current_page: int) -> models.UserBookProgress:
     db_progress.current_page = current_page
-    db_progress.last_read_at = datetime.utcnow()  # Update last_read_at timestamp
+    db_progress.last_read_at = datetime.now(
+        timezone.utc)  # Update last_read_at timestamp
     db.add(db_progress)
     db.commit()
     db.refresh(db_progress)
@@ -105,7 +106,7 @@ def get_note(db: Session, note_id: uuid.UUID) -> Optional[models.UserBookNote]:
 
 def update_note(db: Session, db_note: models.UserBookNote, text: str) -> models.UserBookNote:
     db_note.text = text
-    db_note.updated_at = datetime.utcnow()
+    db_note.updated_at = datetime.now(timezone.utc)
     db.add(db_note)
     db.commit()
     db.refresh(db_note)

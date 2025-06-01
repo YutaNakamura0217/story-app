@@ -115,9 +115,16 @@ def test_create_book(db_session: Session):
 ```
 
 ## 3. Running Tests
-- Navigate to the `backend` directory: `cd backend`
-- Run pytest: `pytest`
-- Pytest will automatically discover and run tests in the `tests` directory.
+- **Important**: Ensure your current working directory is `backend` before running tests.
+  ```bash
+  # Example:
+  cd path/to/your/project/story-app/backend
+  ```
+- Run pytest:
+  ```bash
+  pytest
+  ```
+- Pytest will automatically discover and run tests from this `backend` directory, looking into its `tests` subdirectory. This is crucial for correct import path resolution and configuration loading.
 - Coverage reports will be printed to the console.
 
 ## 4. CRUD Modules Remaining to Test

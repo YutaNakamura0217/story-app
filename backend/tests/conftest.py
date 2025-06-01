@@ -1,23 +1,42 @@
-import os
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from app.db import get_db  # Import the original get_db dependency
+from app.main import app  # Import your FastAPI app
+from fastapi.testclient import TestClient
+from app.models import *
+from app.db import Base  # We still need Base for metadata
+from app.core.config import settings
 from typing import Generator
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine
+import pytest
+
 
 # Adjust the import path if your Base and SessionLocal are located elsewhere
-# Assuming pytest is run from the 'backend' directory, 'app' is a top-level package.
-# APP_DB_URL is already test-aware
-from app.db import Base, DATABASE_URL as APP_DB_URL
+# Assuming pytest is run from 'backend/', so 'app' is the path.
 # Ensure all models are imported for Base.metadata
-from app.models import *
 
 # Alembic imports for managing schema (optional, can use Base.metadata.create_all for simplicity)
 # from alembic.config import Config
 # from alembic import command
 
-# Use the DATABASE_URL from db.py which is already configured to use TEST_DATABASE_URL
-# when TESTING=true (set by pytest.ini)
-TEST_SQLALCHEMY_DATABASE_URL = APP_DB_URL
+# FastAPI TestClient
+
+# Determine the Test Database URL from settings
+if not settings.TESTING:
+    # This should not happen if pytest.ini sets TESTING=true via env var for settings
+    # Or if settings.TESTING is directly True for test environment
+    # For safety, one might raise an error or log if settings.TESTING is not True here.
+    # However, pytest.ini should ensure settings.TESTING is True.
+    pass
+
+if not settings.TEST_DATABASE_URL:
+    raise ValueError(
+        "TEST_DATABASE_URL must be set in .env file or environment for testing.")
+
+TEST_SQLALCHEMY_DATABASE_URL = settings.TEST_DATABASE_URL
+# Ensure the test URL uses psycopg2 driver if not specified, similar to db.py
+if "postgresql://" in TEST_SQLALCHEMY_DATABASE_URL and "psycopg2" not in TEST_SQLALCHEMY_DATABASE_URL:
+    TEST_SQLALCHEMY_DATABASE_URL = TEST_SQLALCHEMY_DATABASE_URL.replace(
+        "postgresql://", "postgresql+psycopg2://")
 
 
 @pytest.fixture(scope="session")
@@ -25,13 +44,27 @@ def db_engine():
     """
     Fixture to create a test database engine.
     It uses the TEST_SQLALCHEMY_DATABASE_URL.
-    The schema (tables) will be created and dropped per test function
-    by the db_session fixture.
+    It also ensures all tables are dropped and recreated at the start of the session
+    to guarantee a clean state for the entire test run, in addition to per-function cleanup.
     """
     engine = create_engine(TEST_SQLALCHEMY_DATABASE_URL,
                            echo=False, future=True)
+
+    # Force close any existing connections, then drop and recreate tables
+    # This is a more aggressive cleanup for the start of the session.
+    engine.dispose()  # Close all connections in the connection pool
+    with engine.connect() as connection:
+        # For PostgreSQL, you might need to terminate active connections to the database
+        # if drop_all fails. This is an advanced step not typically needed.
+        # For now, let's assume dispose() + drop_all() is enough.
+        pass  # Ensure engine is active for metadata operations
+
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
     yield engine
-    engine.dispose()
+
+    engine.dispose()  # Clean up connections at the very end
 
 
 @pytest.fixture(scope="function")
@@ -40,23 +73,55 @@ def db_session(db_engine) -> Generator[Session, None, None]:
     Fixture to provide a database session with a clean schema for each test.
     Creates all tables before the test and drops them afterwards.
     """
-    # Create a new SessionLocal factory bound to the test engine
-    TestSessionLocal = sessionmaker(
-        autocommit=False, autoflush=False, bind=db_engine, future=True)
+    # The db_engine fixture (session-scoped) now handles initial table creation.
+    # This function-scoped fixture will provide a session with a nested transaction
+    # to ensure that commits within the test (e.g., in CRUD functions) are rolled back.
+    connection = db_engine.connect()
 
-    # Create all tables
-    # This ensures a clean schema for each test.
-    # For more complex scenarios or if you want to test migrations themselves,
-    # you might integrate Alembic here to run migrations up to head.
-    Base.metadata.create_all(bind=db_engine)
+    # Begin an "outer" transaction for the test scope
+    outer_transaction = connection.begin()
 
-    db = TestSessionLocal()
+    # Create a session that uses this connection
+    db = Session(bind=connection, future=True)
+
+    # Start a nested transaction (savepoint) for the actual test operations.
+    # Commits within the test will commit to this savepoint.
+    nested_transaction = db.begin_nested()
+
     try:
         yield db
     finally:
+        # Rollback the nested transaction. If db.commit() was called in the test code,
+        # it committed to this savepoint. Rolling back the savepoint undoes those specific changes.
+        nested_transaction.rollback()
         db.close()
-        # Drop all tables to ensure isolation between tests
-        Base.metadata.drop_all(bind=db_engine)
+
+        # Rollback the outer transaction to ensure the test leaves no trace.
+        outer_transaction.rollback()
+        connection.close()
+
+
+@pytest.fixture(scope="function")
+def client(db_session: Session) -> Generator[TestClient, None, None]:
+    """
+    Fixture to provide a FastAPI TestClient that uses the test database session.
+    Overrides the get_db dependency for the app.
+    """
+    def override_get_db() -> Generator[Session, None, None]:
+        try:
+            yield db_session
+        finally:
+            # The db_session fixture itself handles close/rollback/commit
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    with TestClient(app) as c:
+        yield c
+
+    # Clean up dependency override after test
+    app.dependency_overrides.clear()
+
 
 # If you prefer to use Alembic to manage the test schema:
 # @pytest.fixture(scope="session")

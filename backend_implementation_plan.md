@@ -676,32 +676,127 @@ FastAPIルーターを使用してモジュールごとに実装を進めます�
 -   質問関連 (`GET /books/{book_id}/questions`, `POST /users/me/answers`, `GET /users/me/answers`)
 -   ディスカッション関連 (`GET /books/{book_id}/discussions`, `POST /books/{book_id}/discussions`, `GET /discussions/{discussion_id}/posts`, `POST /discussions/{discussion_id}/posts`)
 
-## 5. 実装ステップの提案
+## 5. 実装ステップ (詳細計画)
 
-1.  **環境構築**:
-    -   FastAPIプロジェクトの基本設定、PostgreSQLデータベースの準備、`.env` ファイルの設定は完了済み。
-2.  **データベースマイグレーション**:
-    -   Alembicなどのマイグレーションツールを導入。
-    -   上記「3. データベーススキーマセットアップ」で定義したテーブル構造に基づき、マイグレーションファイルを作成・実行。
-3.  **基本モデルとスキーマ定義**:
-    -   `backend/app/models.py` にSQLAlchemyモデルを定義します。既存の `models.py` の記述スタイル（`Mapped`、`mapped_column` の使用、型ヒント、リレーションシップ定義、`__repr__`メソッドなど）を踏襲してください。
-    -   `backend/app/schemas.py` にPydanticスキーマを定義します。
-4.  **CRUD操作の実装**:
-    -   各モデルに対する基本的なCRUD操作関数を `backend/app/crud/` ディレクトリ以下に作成。
-5.  **認証機能の実装**:
-    -   `auth.py` ルーターと関連処理を実装。トークン生成、パスワードハッシュ化など。
-6.  **各機能ごとのルーターとエンドポイント実装**:
-    -   上記「4. APIエンドポイント実装」の各セクション（Users, Children, Booksなど）ごとに、ルーターファイルを作成し、エンドポイントを実装。
-    -   各エンドポイントでCRUD関数を呼び出し、適切なスキーマでレスポンスを返す。
-    -   依存性注入 (`Depends`) を活用して、DBセッションや現在のユーザー情報を取得。
-7.  **テスト**:
-    -   ユニットテストと結合テストを作成し、各エンドポイントの動作を確認。
-8.  **ドキュメント**:
-    -   FastAPIが自動生成するSwagger UI (`/docs`) および ReDoc (`/redoc`) を確認し、必要に応じてスキーマの説明などを充実させる。
+環境構築、基本的なCRUD関数およびその単体テストは完了済みであるとの前提に基づき、以下のステップで実装を進めます。
 
-## 6. その他
+### フェーズ1: 基盤整備と認証機能の実装
 
--   エラーハンドリング: FastAPIの例外ハンドラを用いて、一貫したエラーレスポンス形式を定義する。
--   非同期処理: データベースアクセスなどI/Oバウンドな処理は非同期 (`async/await`) で実装する。
+1.  **モデルとスキーマの最終確認 (推奨)**
+    *   `backend/app/models.py` (SQLAlchemyモデル) と `backend/app/schemas.py` (Pydanticスキーマ) が、`backend_design.md` および本ドキュメントの「3. データベーススキーマセットアップ」セクションのスコープ内定義（質問・ディスカッション関連を除く）と完全に一致し、実装済みのCRUD関数と整合性が取れていることを確認します。
+    *   特に、リレーションシップ定義、型ヒント、Enum型などが正しく設定されているかレビューします。
+
+2.  **データベースマイグレーションの確認・実行**
+    *   Alembicによるマイグレーション設定が完了していることを確認します。
+    *   現在の `models.py` の状態を反映したマイグレーションファイルが存在し、データベーススキーマが最新であることを確認します。必要であれば、新しいマイグレーションファイルを作成し、実行します (`alembic revision -m "update_schema_for_api_endpoints"` や `alembic upgrade head` など)。
+    *   本ドキュメントの「3. データベーススキーマセットアップ」にリストされているテーブル（除外テーブルを除く）がすべて作成されるようにします。
+
+3.  **認証機能 (`/auth`) の実装**
+    *   **対象ファイル**: `backend/app/routes/auth.py`, `backend/app/core/security.py` (新規または既存), `backend/app/crud/crud_user.py` (既存利用)
+    *   **エンドポイント** (本ドキュメント 4.1節参照):
+        *   `POST /auth/register`
+        *   `POST /auth/login`
+        *   `POST /auth/request-password-reset`
+        *   `POST /auth/reset-password`
+    *   **実装内容**:
+        *   パスワードのハッシュ化と検証ロジック。
+        *   JWTアクセストークンの生成とデコード処理。
+        *   FastAPIの `OAuth2PasswordBearer` と `Security` を利用した依存性注入 (`get_current_active_user`など)。
+    *   **テスト**: これらの認証エンドポイントに対する結合テストを作成します。
+
+### フェーズ2: 主要なドメインのAPIエンドポイント実装
+
+以下の各機能について、本ドキュメントの4.2節以降を参考に、ルーターとエンドポイントを実装し、それぞれ結合テストを作成します。CRUD関数は既に存在するため、エンドポイントは主にこれらのCRUD関数を呼び出し、適切なPydanticスキーマでレスポンスを返す形になります。
+
+4.  **ユーザー機能 (`/users`) の実装**
+    *   **対象ファイル**: `backend/app/routes/users.py`
+    *   **エンドポイント** (本ドキュメント 4.2節参照):
+        *   `GET /users/me`
+        *   `PUT /users/me`
+        *   `PUT /users/me/change-email`
+        *   `PUT /users/me/change-password`
+        *   `GET /users/me/settings`
+        *   `PUT /users/me/settings`
+        *   `GET /users/me/subscription` (モック対応)
+        *   `GET /users/me/billing-history` (モック対応)
+    *   **依存関係**: 認証機能。
+
+5.  **子供機能 (`/users/me/children`) の実装**
+    *   **対象ファイル**: `backend/app/routes/children.py` (必要に応じて新規作成)
+    *   **エンドポイント** (本ドキュメント 4.3節参照):
+        *   `GET /users/me/children`
+        *   `POST /users/me/children`
+        *   `GET /users/me/children/{child_id}`
+        *   `PUT /users/me/children/{child_id}`
+        *   `DELETE /users/me/children/{child_id}`
+
+6.  **テーマ機能 (`/themes`) の実装**
+    *   **対象ファイル**: `backend/app/routes/themes.py` (必要に応じて新規作成)
+    *   **エンドポイント** (本ドキュメント 4.5節参照):
+        *   `GET /themes` (関連書籍数 `book_count` の集計が必要)
+        *   `GET /themes/{theme_id}/books` (書籍リストのフィルタリング)
+
+7.  **書籍機能 (`/books`) の実装**
+    *   **対象ファイル**: `backend/app/routes/books.py`
+    *   **エンドポイント** (本ドキュメント 4.4節参照):
+        *   `GET /books` (フィルタリング、ソート、ページネーション)
+        *   `GET /books/{book_id}` (関連情報: `BookPage`, `BookTocItem`, `Review`概要などを含む `BookDetailRead` スキーマのレスポンス。`crud_book.py` でのデータ集約ロジックの拡充が必要になる場合があります)
+        *   `GET /books/{book_id}/pages`
+    *   **注意点**: `GET /books/{book_id}` は複数のテーブルから情報を集約する必要があるため、`crud_book.py` の既存関数を拡張するか、サービスクラスを導入してロジックを整理することを検討してください。
+
+8.  **レビュー機能 (`/books/{book_id}/reviews`, `/reviews/{review_id}`) の実装**
+    *   **対象ファイル**: `backend/app/routes/reviews.py`
+    *   **エンドポイント** (本ドキュメント 4.6節参照):
+        *   `GET /books/{book_id}/reviews`
+        *   `POST /books/{book_id}/reviews`
+        *   `PUT /reviews/{review_id}`
+        *   `DELETE /reviews/{review_id}`
+
+9.  **お気に入り機能 (`/users/me/favorites`) の実装**
+    *   **対象ファイル**: `backend/app/routes/favorites.py` (必要に応じて新規作成)
+    *   **エンドポイント** (本ドキュメント 4.7節参照):
+        *   `GET /users/me/favorites`
+        *   `POST /users/me/favorites/{book_id}`
+        *   `DELETE /users/me/favorites/{book_id}`
+
+10. **読書進捗機能 (`/users/me/books/{book_id}/progress, ...`) の実装**
+    *   **対象ファイル**: `backend/app/routes/progress.py` (必要に応じて新規作成)
+    *   **エンドポイント** (本ドキュメント 4.8節参照):
+        *   `GET /users/me/books/{book_id}/progress` (ブックマーク、メモも含む)
+        *   `PUT /users/me/books/{book_id}/progress` (現在ページ更新)
+        *   `POST /users/me/books/{book_id}/bookmarks`
+        *   `DELETE /users/me/books/{book_id}/bookmarks/{page_number}`
+        *   `POST /users/me/books/{book_id}/notes`
+        *   `DELETE /users/me/books/{book_id}/notes/{note_id}`
+
+11. **学習履歴機能 (`/users/me/learning-history`) の実装**
+    *   **対象ファイル**: `backend/app/routes/history.py` (必要に応じて新規作成)
+    *   **エンドポイント** (本ドキュメント 4.9節参照):
+        *   `GET /users/me/learning-history`
+
+### フェーズ3: 仕上げ
+
+12. **結合テストの網羅性向上**
+    *   すべてのエンドポイントに対して、正常系・異常系（バリデーションエラー、認証エラー、権限エラー、リソース未発見など）のテストケースを作成します。
+    *   `.clinerules/backend.md` に記載されているテスト作成時の注意点を参考に、質の高いテストを作成します。
+
+13. **APIドキュメントの整備**
+    *   FastAPIが自動生成するSwagger UI (`/docs`) および ReDoc (`/redoc`) を確認します。
+    *   Pydanticスキーマやエンドポイントの `description` などを追記し、ドキュメントの可読性を向上させます。
+
+14. **エラーハンドリングの統一**
+    *   FastAPIの例外ハンドラを用いて、API全体で一貫したエラーレスポンス形式（例: `{ "detail": "Error message" }`）となるようにします。
+
+## 6. フロントエンドとの連携及び一般的な注意点
+
+-   **フロントエンドとの連携**:
+    -   `frontend_design.md` を参照し、特に各ページで必要とされるデータの構造や、エンドポイントのレスポンス形式がフロントエンドの期待と一致するように注意して実装を進めてください。
+    -   例えば、書籍詳細ページでは多くの関連情報が一度に必要となるため、バックエンドの `/books/{book_id}` エンドポイントはこれらの情報を効率的に提供できるように設計する必要があります。
+
+-   **進め方**:
+    -   上記のフェーズとステップに沿って、一つずつ機能を実装し、テストしていくことをお勧めします。特に認証機能は多くの機能の基盤となるため、最初に取り組むのが良いでしょう。
+
+-   **非同期処理**:
+    -   データベースアクセスなどI/Oバウンドな処理は非同期 (`async/await`) で実装します。これはFastAPIの標準的な使い方であり、パフォーマンス向上のために重要です。
 
 この計画に基づき、段階的にバックエンド機能を追加していきます。

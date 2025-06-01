@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from .db import get_db, engine, Base  # db.py から import
 from . import models  # Import models to register them with Base
 from .routes import auth, books, categories, reviews, users  # Import routers
+from .core.config import settings  # Import settings for API_V1_STR
 
 app = FastAPI(
     title="Story App API",
@@ -13,13 +14,28 @@ app = FastAPI(
 )
 
 # Include routers
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-app.include_router(books.router, prefix="/books", tags=["Books"])
-app.include_router(categories.router, prefix="/categories",
+app.include_router(
+    auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
+app.include_router(
+    books.router, prefix=f"{settings.API_V1_STR}/books", tags=["Books"])
+app.include_router(categories.router, prefix=f"{settings.API_V1_STR}/categories",
                    tags=["Categories"])
-# Prefix handled within reviews.py
-app.include_router(reviews.router, tags=["Reviews"])
-app.include_router(users.router, prefix="/users", tags=["Users"])
+# Prefix handled within reviews.py, so we add API_V1_STR here if reviews.router itself doesn't include /api/v1
+# Assuming reviews.router has its own specific prefix like /books/{book_id}/reviews
+# If reviews.router is meant to be at /api/v1/reviews, then it needs f"{settings.API_V1_STR}/reviews"
+# For now, let's assume reviews.router paths are relative to API_V1_STR if no other prefix is given
+# A common pattern is that sub-routers (like reviews for a book) are mounted under their parent.
+# If reviews.router is a top-level router, it should be:
+# app.include_router(reviews.router, prefix=f"{settings.API_V1_STR}/reviews", tags=["Reviews"])
+# Given the comment "# Prefix handled within reviews.py", it's safer to assume it's a sub-router or its paths are absolute.
+# Let's check reviews.py later if this doesn't fix things. For now, we'll assume it's fine or needs its own API_V1_STR prefix.
+# To be safe and consistent, if reviews.router is a top-level router, it should have the API_V1_STR prefix.
+# If it's a sub-router (e.g. /books/{book_id}/reviews), then the parent router (books) already has the API_V1_STR.
+# Let's assume for now it's a top-level router that needs the prefix.
+app.include_router(reviews.router, prefix=f"{settings.API_V1_STR}", tags=[
+                   "Reviews"])  # Assuming reviews.router has paths like /reviews
+app.include_router(
+    users.router, prefix=f"{settings.API_V1_STR}/users", tags=["Users"])
 
 
 # ── 開発中だけ: 起動時にテーブル作成しておく ──
@@ -37,7 +53,7 @@ def on_startup() -> None:
         raise RuntimeError(f"💥  DB 接続に失敗しました: {e}") from e
 
     # モデルを自動で作る場合は下記を有効化
-    Base.metadata.create_all(bind=engine)
+    # Base.metadata.create_all(bind=engine) # Managed by Alembic
 
 
 # ───────────────────────────

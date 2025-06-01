@@ -438,6 +438,16 @@ class LearningActivityRead(LearningActivityBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+# Schemas for auth routes not covered by User* schemas
+class EmailSchema(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetSchema(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=8)
+
+
 # Update forward refs for Pydantic models that reference each other before definition
 Token.model_rebuild()
 # Add other .model_rebuild() if circular dependencies arise with more complex nesting

@@ -1,9 +1,7 @@
 from __future__ import annotations  # 3.7–3.9 互換のため（任意）
 from typing import Generator
 from contextlib import contextmanager
-import os
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import (
     declarative_base,
@@ -11,29 +9,31 @@ from sqlalchemy.orm import (
     Session,
 )
 
-load_dotenv()
+from backend.app.core.config import settings
 
 # Determine if running in test mode
-TESTING_MODE = os.getenv("TESTING", "false").lower() == "true"
+TESTING_MODE = settings.TESTING
 
 if TESTING_MODE:
-    DATABASE_URL = os.getenv("TEST_DATABASE_URL")
-    if not DATABASE_URL:
+    CURRENT_DATABASE_URL = settings.TEST_DATABASE_URL
+    if not CURRENT_DATABASE_URL:
         raise ValueError(
-            "TEST_DATABASE_URL not set in environment for testing mode")
+            "TEST_DATABASE_URL not set in .env file or environment for testing mode")
     # Ensure the test URL uses psycopg2 driver if not specified, or adjust as needed
-    if "postgresql://" in DATABASE_URL and "psycopg2" not in DATABASE_URL:
-        DATABASE_URL = DATABASE_URL.replace(
+    # This logic might be better placed in config.py if complex validation/transformation is needed
+    if "postgresql://" in CURRENT_DATABASE_URL and "psycopg2" not in CURRENT_DATABASE_URL:
+        CURRENT_DATABASE_URL = CURRENT_DATABASE_URL.replace(
             "postgresql://", "postgresql+psycopg2://")
 else:
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    if not DATABASE_URL:
-        # Fallback if DATABASE_URL is not in .env for some reason (though it should be)
-        DATABASE_URL = "postgresql+psycopg2://postgres:Yuki0217@localhost:5432/story_app"
+    CURRENT_DATABASE_URL = settings.DATABASE_URL
+    if not CURRENT_DATABASE_URL:
+        # This case should ideally not happen if config.py has a default or .env provides it
+        raise ValueError(
+            "DATABASE_URL not set in .env file or environment for non-testing mode")
 
 
 engine = create_engine(
-    DATABASE_URL,
+    CURRENT_DATABASE_URL,
     echo=False,
     pool_pre_ping=True,
     future=True,

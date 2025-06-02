@@ -21,7 +21,8 @@ def add_favorite(db: Session, user_id: uuid.UUID, book_id: uuid.UUID) -> Optiona
 
     db_favorite = models.UserFavorite(user_id=user_id, book_id=book_id)
     db.add(db_favorite)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_favorite)
     return db_favorite
 
@@ -30,7 +31,8 @@ def remove_favorite(db: Session, user_id: uuid.UUID, book_id: uuid.UUID) -> Opti
     db_favorite = get_favorite(db, user_id=user_id, book_id=book_id)
     if db_favorite:
         db.delete(db_favorite)
-        db.commit()
+        # db.commit() # Removed
+        db.flush()
         return db_favorite
     return None  # Or raise an exception if it's expected to exist
 

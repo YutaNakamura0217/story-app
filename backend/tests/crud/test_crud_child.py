@@ -24,7 +24,7 @@ def create_db_child(db: Session, user_id: uuid.UUID, name_suffix: str = "", age:
     child_in = create_dummy_child_data(name_suffix=name_suffix, age=age)
     db_child = models.Child(**child_in.model_dump(), user_id=user_id)
     db.add(db_child)
-    db.commit()
+    db.flush()  # Changed from db.commit()
     db.refresh(db_child)
     return db_child
 

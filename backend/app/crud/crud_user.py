@@ -38,16 +38,19 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
         # tier will default to FREE as per model definition
     )
     db.add(db_user)
-    db.commit()
+    db.flush()  # Flush to get db_user.id
     db.refresh(db_user)
 
     # Create default user settings
     db_user_settings = models.UserSettings(user_id=db_user.id)
     db.add(db_user_settings)
-    db.commit()
+    db.flush()  # Flush UserSettings changes
     db.refresh(db_user_settings)
     # Refresh user to ensure user_settings relationship is populated
+    # This refresh might be redundant if the relationship is well-defined
     db.refresh(db_user)
+    # and UserSettings creation doesn't alter User in a way that needs another refresh.
+    # However, keeping it for safety unless proven unnecessary.
 
     return db_user
 
@@ -57,8 +60,9 @@ def update_user(db: Session, db_user: models.User, user_in: schemas.UserUpdate) 
     for field, value in update_data.items():
         setattr(db_user, field, value)
 
-    db.add(db_user)
-    db.commit()
+    db.add(db_user)  # or db.merge(db_user)
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_user)
     return db_user
 
@@ -78,7 +82,8 @@ def update_user_settings(
     for field, value in update_data.items():
         setattr(db_user_settings, field, value)
 
-    db.add(db_user_settings)
-    db.commit()
+    db.add(db_user_settings)  # or db.merge(db_user_settings)
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_user_settings)
     return db_user_settings

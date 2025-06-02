@@ -21,7 +21,8 @@ def create_learning_activity(
         related_link=activity.related_link
     )
     db.add(db_activity)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_activity)
     return db_activity
 

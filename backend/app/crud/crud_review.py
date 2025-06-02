@@ -15,7 +15,8 @@ def create_review(db: Session, review: schemas.ReviewCreate, book_id: uuid.UUID,
         user_id=user_id
     )
     db.add(db_review)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_review)
     return db_review
 
@@ -53,15 +54,17 @@ def update_review(db: Session, db_review: models.Review, review_in: schemas.Revi
     for field, value in update_data.items():
         setattr(db_review, field, value)
 
-    db.add(db_review)
-    db.commit()
+    db.add(db_review)  # or db.merge(db_review)
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_review)
     return db_review
 
 
 def delete_review(db: Session, db_review: models.Review) -> models.Review:
     db.delete(db_review)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     return db_review
 
 

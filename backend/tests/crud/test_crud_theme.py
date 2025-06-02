@@ -26,7 +26,7 @@ def create_db_theme(db: Session, name_suffix: str = "", category: ThemeCategoryE
         name_suffix=name_suffix, category=category)
     db_theme = models.Theme(**theme_in.model_dump())
     db.add(db_theme)
-    db.commit()
+    db.flush()  # Changed from db.commit()
     db.refresh(db_theme)
     return db_theme
 

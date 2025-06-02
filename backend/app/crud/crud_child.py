@@ -13,7 +13,8 @@ def create_child(db: Session, child: schemas.ChildCreate, user_id: uuid.UUID) ->
         user_id=user_id
     )
     db.add(db_child)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_child)
     return db_child
 
@@ -31,13 +32,15 @@ def update_child(db: Session, db_child: models.Child, child_in: schemas.ChildUpd
     for field, value in update_data.items():
         setattr(db_child, field, value)
 
-    db.add(db_child)
-    db.commit()
+    db.add(db_child)  # or db.merge(db_child)
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_child)
     return db_child
 
 
 def delete_child(db: Session, db_child: models.Child) -> models.Child:
     db.delete(db_child)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     return db_child

@@ -37,10 +37,13 @@ def get_or_create_progress(db: Session, user_id: uuid.UUID, book_id: uuid.UUID, 
             last_read_at=datetime.now(timezone.utc)
         )
         db.add(db_progress)
-        db.commit()
+        # db.commit() # Removed
+        db.flush()
         db.refresh(db_progress)
         # Need to reload relationships if they are accessed immediately after creation
-        db.refresh(db_progress, attribute_names=['bookmarks', 'notes'])
+        # This refresh might be redundant if the ORM handles relationship population correctly after flush/refresh.
+        # db.refresh(db_progress, attribute_names=['bookmarks', 'notes']) # Consider if this is truly needed.
+        # Refreshing the main object should suffice.
     return db_progress
 
 
@@ -48,8 +51,9 @@ def update_progress_page(db: Session, db_progress: models.UserBookProgress, curr
     db_progress.current_page = current_page
     db_progress.last_read_at = datetime.now(
         timezone.utc)  # Update last_read_at timestamp
-    db.add(db_progress)
-    db.commit()
+    db.add(db_progress)  # or db.merge(db_progress)
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_progress)
     return db_progress
 
@@ -64,7 +68,8 @@ def create_bookmark(db: Session, progress_id: uuid.UUID, page_number: int) -> mo
     db_bookmark = models.UserBookBookmark(
         progress_id=progress_id, page_number=page_number)
     db.add(db_bookmark)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_bookmark)
     return db_bookmark
 
@@ -82,7 +87,8 @@ def get_bookmark_by_id(db: Session, bookmark_id: uuid.UUID) -> Optional[models.U
 
 def delete_bookmark(db: Session, db_bookmark: models.UserBookBookmark) -> models.UserBookBookmark:
     db.delete(db_bookmark)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     return db_bookmark
 
 
@@ -95,7 +101,8 @@ def create_note(db: Session, progress_id: uuid.UUID, page_number: int, text: str
     db_note = models.UserBookNote(
         progress_id=progress_id, page_number=page_number, text=text)
     db.add(db_note)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_note)
     return db_note
 
@@ -107,15 +114,17 @@ def get_note(db: Session, note_id: uuid.UUID) -> Optional[models.UserBookNote]:
 def update_note(db: Session, db_note: models.UserBookNote, text: str) -> models.UserBookNote:
     db_note.text = text
     db_note.updated_at = datetime.now(timezone.utc)
-    db.add(db_note)
-    db.commit()
+    db.add(db_note)  # or db.merge(db_note)
+    # db.commit() # Removed
+    db.flush()
     db.refresh(db_note)
     return db_note
 
 
 def delete_note(db: Session, db_note: models.UserBookNote) -> models.UserBookNote:
     db.delete(db_note)
-    db.commit()
+    # db.commit() # Removed
+    db.flush()
     return db_note
 
 

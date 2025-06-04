@@ -15,7 +15,8 @@ def list_themes(db: Session = Depends(get_db), skip: int = 0, limit: int = 100) 
     result = []
     for theme in themes:
         book_count = len(theme.book_themes)
-        result.append(schemas.ThemeRead.model_validate(theme, context={"book_count": book_count}))
+        result.append(schemas.ThemeRead.model_validate(
+            theme, context={"book_count": book_count}))
     return result
 
 
@@ -28,4 +29,3 @@ def books_by_theme(
 ) -> list[schemas.BookRead]:
     books = crud_book.get_books(db, skip=skip, limit=limit, theme_id=theme_id)
     return books
-

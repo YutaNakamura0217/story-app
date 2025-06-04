@@ -16,7 +16,7 @@ def test_list_themes(client: TestClient, db_session: Session) -> None:
         db_book=book,
         book_in=schemas.BookUpdate(theme_ids=[theme.id])
     )
-    db_session.commit()
+    db_session.commit()  # Reverted back to commit()
 
     response = client.get(f"{settings.API_V1_STR}/themes")
     assert response.status_code == 200

@@ -74,31 +74,18 @@ def db_session(db_engine) -> Generator[Session, None, None]:
     Creates all tables before the test and drops them afterwards.
     """
     # The db_engine fixture (session-scoped) now handles initial table creation.
-    # This function-scoped fixture will provide a session with a nested transaction
-    # to ensure that commits within the test (e.g., in CRUD functions) are rolled back.
+    # This function-scoped fixture will provide a session within a single transaction
+    # that is rolled back at the end of the test.
     connection = db_engine.connect()
-
-    # Begin an "outer" transaction for the test scope
-    outer_transaction = connection.begin()
-
-    # Create a session that uses this connection
+    transaction = connection.begin()
     db = Session(bind=connection, future=True)
-
-    # Start a nested transaction (savepoint) for the actual test operations.
-    # Commits within the test will commit to this savepoint.
-    nested_transaction = db.begin_nested()
 
     try:
         yield db
     finally:
-        # Rollback the nested transaction. If db.commit() was called in the test code,
-        # it committed to this savepoint. Rolling back the savepoint undoes those specific changes.
-        nested_transaction.rollback()
-        db.close()
-
-        # Rollback the outer transaction to ensure the test leaves no trace.
-        outer_transaction.rollback()
-        connection.close()
+        db.close()  # Close the session first.
+        transaction.rollback()  # Rollback the transaction.
+        connection.close()  # Close the connection.
 
 
 @pytest.fixture(scope="function")

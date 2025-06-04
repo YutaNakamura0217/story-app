@@ -1,9 +1,9 @@
-from app.db import get_db  # Import the original get_db dependency
-from app.main import app  # Import your FastAPI app
+from backend.app.db import get_db  # Import the original get_db dependency
+from backend.app.main import app  # Import your FastAPI app
 from fastapi.testclient import TestClient
-from app.models import *
-from app.db import Base  # We still need Base for metadata
-from app.core.config import settings
+from backend.app.models import *
+from backend.app.db import Base  # We still need Base for metadata
+from backend.app.core.config import settings
 from typing import Generator
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine

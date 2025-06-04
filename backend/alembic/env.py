@@ -1,4 +1,4 @@
-from backend.app.db import Base, DATABASE_URL as APP_CONFIGURED_DATABASE_URL
+from backend.app.db import Base, CURRENT_DATABASE_URL as APP_CONFIGURED_DATABASE_URL
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config

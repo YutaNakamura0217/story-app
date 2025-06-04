@@ -17,7 +17,7 @@ Ensure the following Python libraries are installed in your virtual environment:
 
 You can install them via pip:
 ```bash
-pip install pytest pytest-cov pytest-asyncio psycopg2-binary passlib[bcrypt] httpx
+pip install -r ../../requirements.txt
 ```
 
 ### 1.2. Test Database Configuration

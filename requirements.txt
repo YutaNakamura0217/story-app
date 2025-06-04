@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy>=2.0
+psycopg2-binary
+passlib[bcrypt]
+python-jose[cryptography]
+pydantic-settings
+pytest
+httpx
+python-multipart
+PyYAML>=6.0
+email-validator
+pytest-cov

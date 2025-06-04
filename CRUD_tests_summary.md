@@ -15,6 +15,7 @@
 -   `test_crud_favorite.py`
 -   `test_crud_history.py`
 -   `test_crud_progress.py`
+-   `tests/api/test_children.py` による子供エンドポイントの統合テスト
 
 テスト作成およびデバッグの過程で、主に以下の種類のエラーに対応しました。
 
@@ -43,7 +44,7 @@
 cd backend; pytest
 ```
 
--   **実行結果**: 57 passed, 1 warning in 14.23s (前回の実行時)
--   **カバレッジ**: 93% (前回の実行時)
+-   **実行結果**: 71 passed, 5 warnings in 23.35s (最新実行)
+-   **カバレッジ**: 93%
 
 これにより、主要なCRUD操作に対するユニットテストが整備されました。

@@ -11,6 +11,7 @@ Ubuntu 系の場合は次のようにインストールします:
 ```bash
 sudo apt-get update
 sudo apt-get install postgresql postgresql-contrib
+sudo service postgresql start
 ```
 
 ### Python 環境

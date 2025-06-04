@@ -28,3 +28,15 @@ Execute the following steps from the project root unless otherwise noted.
    ```
 
 See `HOW_TO_RUN_TESTS.md` for information on running the automated tests.
+
+## Key API Endpoints
+
+The backend exposes multiple routers under `/api/v1`.  Recently added are the
+child management endpoints.  Authenticated users can manage their children's
+profiles with:
+
+- `GET /api/v1/users/me/children`
+- `POST /api/v1/users/me/children`
+- `GET /api/v1/users/me/children/{child_id}`
+- `PUT /api/v1/users/me/children/{child_id}`
+- `DELETE /api/v1/users/me/children/{child_id}`

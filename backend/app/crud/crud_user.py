@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext  # For password hashing
@@ -25,6 +25,11 @@ def get_user(db: Session, user_id: uuid.UUID) -> Optional[models.User]:
 
 def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
     return db.query(models.User).filter(models.User.email == email).first()
+
+
+def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[models.User]:
+    """Retrieve a list of users with pagination."""
+    return db.query(models.User).offset(skip).limit(limit).all()
 
 
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:

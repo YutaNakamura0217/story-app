@@ -91,33 +91,26 @@ def test_get_user_by_email(db_session: Session):
         db=db_session, email="nonexistent@example.com")
     assert non_existent_user is None
 
-# def test_get_users(db_session: Session):
-#     # crud_user.py does not have get_users function
-#     # Arrange
-#     user1 = crud.user.create_user(
-#         db=db_session, user=create_dummy_user_data(email_suffix="_list1"))
-#     user2 = crud.user.create_user(
-#         db=db_session, user=create_dummy_user_data(email_suffix="_list2"))
-#
-#     # Act
-#     # users_skip0_limit10 = crud.user.get_users(db=db_session, skip=0, limit=10) # This function does not exist
-#     # users_skip1_limit1 = crud.user.get_users(db=db_session, skip=1, limit=1)  # This function does not exist
-#     users_skip0_limit10 = [] # Placeholder
-#     users_skip1_limit1 = []  # Placeholder
-#
-#
-#     # Assert
-#     # assert len(users_skip0_limit10) >= 2
-#     # user_ids_skip0_limit10 = [u.id for u in users_skip0_limit10]
-#     # assert user1.id in user_ids_skip0_limit10
-#     # assert user2.id in user_ids_skip0_limit10
-#
-#     # assert len(users_skip1_limit1) == 1
-#     # all_users_sorted = sorted(
-#     #     [user1, user2], key=lambda u: u.id)
-#     # if len(all_users_sorted) > 1 and users_skip1_limit1:
-#     #     assert users_skip1_limit1[0].id == all_users_sorted[1].id
-#     pass
+def test_get_users(db_session: Session):
+    # Arrange
+    user1 = crud.user.create_user(
+        db=db_session, user=create_dummy_user_data(email_suffix="_list1"))
+    user2 = crud.user.create_user(
+        db=db_session, user=create_dummy_user_data(email_suffix="_list2"))
+
+    # Act
+    users_skip0_limit10 = crud.user.get_users(db=db_session, skip=0, limit=10)
+    users_skip1_limit1 = crud.user.get_users(db=db_session, skip=1, limit=1)
+
+    # Assert
+    assert len(users_skip0_limit10) >= 2
+    user_ids_skip0_limit10 = [u.id for u in users_skip0_limit10]
+    assert user1.id in user_ids_skip0_limit10
+    assert user2.id in user_ids_skip0_limit10
+
+    assert len(users_skip1_limit1) == 1
+    if len(users_skip0_limit10) > 1:
+        assert users_skip1_limit1[0].id == users_skip0_limit10[1].id
 
 
 def test_update_user(db_session: Session):

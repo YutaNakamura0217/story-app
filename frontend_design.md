@@ -9,7 +9,7 @@
 
 ### 2.1. 主要技術スタック
 
--   **UIライブラリ**: React (v19)
+-   **UIライブラリ**: React (v19.1)
 -   **言語**: TypeScript
 -   **ルーティング**: React Router DOM (v7)
 -   **スタイリング**: Tailwind CSS (v3)

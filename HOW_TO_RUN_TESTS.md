@@ -5,6 +5,14 @@
 
 ## 1. 事前準備
 
+### PostgreSQL のインストール
+Ubuntu 系の場合は次のようにインストールします:
+
+```bash
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib
+```
+
 ### Python 環境
 Python 3.11 以上を推奨します。仮想環境の作成例:
 
@@ -14,26 +22,26 @@ source venv/bin/activate
 ```
 
 ### 依存関係のインストール
-使用する主要ライブラリは FastAPI、SQLAlchemy、pytest 等です。
-requirements ファイルは用意していないため、以下のコマンド例を参考に必要なパッケージをインストールしてください:
+リポジトリのルートに `requirements.txt` を追加しました。仮想環境を有効化した状態で次を実行してください:
 
 ```bash
-pip install fastapi "uvicorn[standard]" sqlalchemy psycopg2-binary \
-    pydantic passlib[bcrypt] python-jose[cryptography] \
-    pytest pytest-cov pytest-asyncio httpx
+pip install -r requirements.txt
 ```
 
 ## 2. テスト用データベース
 テストでは PostgreSQL を使用します。SQLite では一部の型が対応せずエラーになるためです。
 
 1. PostgreSQL でテスト用データベースを用意します。
-2. `backend/.env` ファイル（無ければ作成）に `TEST_DATABASE_URL` を設定します。例:
+2. `backend/.env` ファイル（無ければ作成）に以下のような内容を記載します。
 
 ```bash
 TEST_DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/story_app_test
+# 実行用データベースを使う場合は DATABASE_URL も設定します
+# DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/story_app
+SECRET_KEY=your_secret_key
 ```
 
-3. 追加で `SECRET_KEY` などを .env に定義しておくとテストが動作しやすくなります。
+3. 必要に応じてその他の設定値も .env に追記してください。
 
 ## 3. テストの実行
 

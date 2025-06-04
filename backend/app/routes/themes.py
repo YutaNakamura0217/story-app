@@ -15,8 +15,9 @@ def list_themes(db: Session = Depends(get_db), skip: int = 0, limit: int = 100) 
     result = []
     for theme in themes:
         book_count = len(theme.book_themes)
-        result.append(schemas.ThemeRead.model_validate(
-            theme, context={"book_count": book_count}))
+        # Attach book_count temporarily for Pydantic conversion
+        setattr(theme, "book_count", book_count)
+        result.append(schemas.ThemeRead.model_validate(theme))
     return result
 
 

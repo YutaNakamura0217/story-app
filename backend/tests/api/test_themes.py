@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from backend.app.core.config import settings
 from backend.tests.crud.test_crud_theme import create_db_theme
 from backend.tests.crud.test_crud_book import create_dummy_book_for_related_tests
-from backend.app import crud, schemas
+from backend.app import crud, schemas, models
 
 
 def test_list_themes(client: TestClient, db_session: Session) -> None:
@@ -17,7 +17,7 @@ def test_list_themes(client: TestClient, db_session: Session) -> None:
         book_in=schemas.BookUpdate(theme_ids=[theme.id])
     )
     db_session.commit()  # Reverted back to commit()
-
+    # Debugging output removed
     response = client.get(f"{settings.API_V1_STR}/themes")
     assert response.status_code == 200
     data = response.json()

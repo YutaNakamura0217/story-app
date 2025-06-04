@@ -576,3 +576,22 @@ Authentication: Assumes JWT-based authentication. Endpoints marked "Protected" r
 *   **Search**: The `/books?search_query=` is a basic search. More advanced search might use a dedicated search engine (e.g., Elasticsearch) and its own API.
 
 This document provides a foundational structure. Specific details for each endpoint (e.g., exact Pydantic models for request/response) would be further defined during backend development.
+
+## 5. 未実装機能の概要
+
+2024年5月時点のリポジトリを確認したところ、下記のAPIルートはまだ実装されていませ
+ん。モデルやCRUD処理は存在しますが、FastAPI ルーターが用意されておらずフロントエ
+ンドから利用できない状態です。
+
+- `/users` 以下のプロフィール更新、設定変更、メール・パスワード変更
+- `/users/me/children` に関するCRUD
+- `/themes` の取得・一覧
+- `/books` の作成・更新・削除、ページ／TOC 管理
+- `/books/{id}/reviews` や `/reviews/{id}` のレビュー操作
+- `/users/me/favorites` などお気に入り管理
+- `/users/me/books/{book_id}/progress` など読書進捗・ブックマーク・メモ関連
+- `/users/me/learning-history` の学習履歴取得
+- JWT検証用依存関数 (`get_current_user`) をはじめとした認証ミドルウェア
+
+これらのエンドポイントを追加することで、設計ドキュメントで想定した全機能を利用で
+きるようになります。

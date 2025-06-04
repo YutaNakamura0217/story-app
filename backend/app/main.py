@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session
 
 from .db import get_db, engine, Base  # db.py から import
 from . import models  # Import models to register them with Base
-from .routes import auth, books, categories, reviews, users  # Import routers
+from .routes import auth, books, themes, reviews, users  # Import routers
 from .core.config import settings  # Import settings for API_V1_STR
 
 app = FastAPI(
     title="Story App API",
-    description="API for managing books, categories, reviews, and user interactions.",
+    description="API for managing books, themes, reviews, and user interactions.",
     version="0.1.0"
 )
 
@@ -18,8 +18,8 @@ app.include_router(
     auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
 app.include_router(
     books.router, prefix=f"{settings.API_V1_STR}/books", tags=["Books"])
-app.include_router(categories.router, prefix=f"{settings.API_V1_STR}/categories",
-                   tags=["Categories"])
+app.include_router(
+    themes.router, prefix=f"{settings.API_V1_STR}/themes", tags=["Themes"])
 # Reviews endpoints define their own paths (e.g. /books/{book_id}/reviews),
 # so we only prepend API_V1_STR here.
 app.include_router(reviews.router, prefix=f"{settings.API_V1_STR}", tags=["Reviews"])

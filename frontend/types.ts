@@ -192,6 +192,26 @@ export interface ReadingPageNote {
   date: string; // ISO date string
 }
 
+// Progress data from backend
+export interface UserBookBookmark {
+  id: string;
+  pageNumber: number;
+}
+
+export interface UserBookNote {
+  id: string;
+  pageNumber: number;
+  text: string;
+  date: string; // created_at
+}
+
+export interface UserBookProgress {
+  currentPage: number;
+  bookmarks: UserBookBookmark[];
+  notes: UserBookNote[];
+  lastReadAt: string;
+}
+
 // For User Management
 export interface LearningActivity {
     id: string;

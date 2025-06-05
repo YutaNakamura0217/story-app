@@ -3,7 +3,8 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
 import { BookFilters, BookSortOption, PhilosophyTheme, SelectOption, BookTypeFilterOption } from '../../types';
-import { MOCK_THEMES, BOOK_SORT_OPTIONS, BOOK_TYPE_FILTER_OPTIONS } from '../../constants';
+import { BOOK_SORT_OPTIONS, BOOK_TYPE_FILTER_OPTIONS } from '../../constants';
+import { useThemes } from '../../hooks/useThemes';
 import { SearchIcon, FilterIcon, AdjustmentsHorizontalIcon, SparklesIcon } from '../../assets/icons';
 
 interface FilterAndSortSectionProps {
@@ -21,9 +22,10 @@ const FilterAndSortSection: React.FC<FilterAndSortSectionProps> = ({
   onSortChange,
   onResetFilters,
 }) => {
+  const { themes } = useThemes();
   const themeOptions: SelectOption[] = [
     { value: '', label: 'すべてのテーマ' },
-    ...MOCK_THEMES.map(theme => ({ value: theme.id, label: theme.name })),
+    ...themes.map(theme => ({ value: theme.id, label: theme.name })),
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

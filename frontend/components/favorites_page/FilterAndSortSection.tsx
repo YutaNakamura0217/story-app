@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from '../ui/Select';
 import { BookFilters, BookSortOption, SelectOption } from '../../types';
-import { MOCK_THEMES } from '../../constants'; // For theme filter options
+import { useThemes } from '../../hooks/useThemes'; // Fetch themes from API
 import { SparklesIcon } from '../../assets/icons';
 
 interface FavoritesFilterAndSortProps {
@@ -19,9 +19,10 @@ const FilterAndSortSection: React.FC<FavoritesFilterAndSortProps> = ({
   onSortChange,
   totalItems,
 }) => {
+  const { themes } = useThemes();
   const themeOptions: SelectOption[] = [
     { value: '', label: 'すべてのテーマ' },
-    ...MOCK_THEMES.map(theme => ({ value: theme.id, label: theme.name })),
+    ...themes.map(theme => ({ value: theme.id, label: theme.name })),
   ];
 
   const sortOptions: SelectOption[] = [

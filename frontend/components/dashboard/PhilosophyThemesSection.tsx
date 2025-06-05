@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { MOCK_THEMES } from '../../constants';
+import { useThemes } from '../../hooks/useThemes';
 import ThemeCard from './ThemeCard';
 import Button from '../ui/Button';
 import { Link } from 'react-router-dom';
 import { RoutePath } from '../../types';
 
 const PhilosophyThemesSection: React.FC = () => {
-  const themes = MOCK_THEMES; 
+  const { themes, loading } = useThemes();
 
   return (
     <section className="mb-8">
@@ -19,9 +19,13 @@ const PhilosophyThemesSection: React.FC = () => {
       </div>
       <div className="flex overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&amp;::-webkit-scrollbar]:hidden pb-4">
         <div className="flex items-stretch p-4 gap-6"> {/* p-4 to give cards space from edge when scrolling */}
-          {themes.map((theme) => (
-            <ThemeCard key={theme.id} theme={theme} />
-          ))}
+          {loading
+            ? [...Array(3)].map((_, i) => (
+                <div key={i} className="w-40 h-48 bg-amber-100 rounded-xl animate-pulse" />
+              ))
+            : themes.map((theme) => (
+                <ThemeCard key={theme.id} theme={theme} />
+              ))}
         </div>
       </div>
     </section>

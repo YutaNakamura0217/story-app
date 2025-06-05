@@ -6,12 +6,15 @@ import FilterAndSortSection from '../components/books_page/FilterAndSortSection'
 import BookListArea from '../components/books_page/BookListArea';
 import PaginationControls from '../components/ui/PaginationControls';
 import { Book, BookFilters, BookSortOption, BookTypeFilterOption, PhilosophyTheme } from '../types';
-import { MOCK_BOOKS, MOCK_THEMES, ITEMS_PER_PAGE } from '../constants';
+import { ITEMS_PER_PAGE } from '../constants';
+import { useBooks } from '../hooks/useBooks';
+import { useThemes } from '../hooks/useThemes';
 import { useFavorites } from '../hooks/useFavorites'; // Import useFavorites
 
 const BooksPage: React.FC = () => {
-  const [allBooks] = useState<Book[]>(MOCK_BOOKS);
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>(allBooks);
+  const { books: allBooks, loading: booksLoading } = useBooks();
+  const { themes } = useThemes();
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [displayedBooks, setDisplayedBooks] = useState<Book[]>([]);
   
   const [filters, setFilters] = useState<BookFilters>({
@@ -55,10 +58,8 @@ const BooksPage: React.FC = () => {
     }
 
     if (filters.themeId) {
-        const selectedTheme = MOCK_THEMES.find(t => t.id === filters.themeId);
+        const selectedTheme = themes.find(t => t.id === filters.themeId);
         if (selectedTheme) {
-             // Filter books whose tags include the selected theme's name
-             // This is a simplification; a real app might have a direct theme_id on books or a join table.
             books = books.filter(book => book.tags?.some(tag => tag.toLowerCase().includes(selectedTheme.name.toLowerCase())));
         }
     }
@@ -105,10 +106,9 @@ const BooksPage: React.FC = () => {
     }
 
     setFilteredBooks(books);
-    setCurrentPage(1); 
-    // Simulate API delay
-    setTimeout(() => setIsLoading(false), 300);
-  }, [allBooks, filters, sortOption]);
+    setCurrentPage(1);
+    setIsLoading(false);
+  }, [allBooks, filters, sortOption, themes]);
 
   useEffect(() => {
     applyFiltersAndSort();
@@ -156,7 +156,7 @@ const BooksPage: React.FC = () => {
           />
           <BookListArea 
             books={displayedBooks} 
-            isLoading={isLoading || favoritesLoading} // Consider favorites loading state
+            isLoading={isLoading || favoritesLoading || booksLoading}
             onFavoriteToggle={toggleFavorite}
             favorites={favorites}
           />

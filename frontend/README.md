@@ -9,6 +9,10 @@ This contains everything you need to run your app locally.
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Create a `.env` file with the API base URL:
+   ```
+   VITE_API_BASE_URL=http://localhost:8000/api/v1
+   ```
+   You can also set `GEMINI_API_KEY` here if needed.
 3. Run the app:
    `npm run dev`

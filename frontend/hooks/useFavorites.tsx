@@ -1,52 +1,54 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { api } from '../api';
+import { Book } from '../types';
 
 interface FavoritesContextType {
   favorites: Set<string>;
   isFavorite: (bookId: string) => boolean;
-  toggleFavorite: (bookId: string) => void;
+  toggleFavorite: (bookId: string) => Promise<void>;
   loading: boolean;
 }
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
-const FAVORITES_STORAGE_KEY = 'wonderwise_favorites';
-
 export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
+  const fetchFavorites = useCallback(async () => {
+    setLoading(true);
     try {
-      const storedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
-      if (storedFavorites) {
-        setFavorites(new Set(JSON.parse(storedFavorites)));
+      const data = await api<Book[]>("/users/me/favorites");
+      setFavorites(new Set(data.map(b => b.id)));
+    } catch (error) {
+      console.error("Failed to fetch favorites:", error);
+      setFavorites(new Set());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFavorites();
+  }, [fetchFavorites]);
+
+  const toggleFavorite = useCallback(async (bookId: string) => {
+    try {
+      if (favorites.has(bookId)) {
+        await api(`/users/me/favorites/${bookId}`, { method: 'DELETE' });
+        setFavorites(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(bookId);
+          return newSet;
+        });
+      } else {
+        await api(`/users/me/favorites/${bookId}`, { method: 'POST' });
+        setFavorites(prev => new Set(prev).add(bookId));
       }
     } catch (error) {
-      console.error("Failed to load favorites from localStorage:", error);
-      // Initialize with an empty set if parsing fails
-      setFavorites(new Set());
+      console.error('Failed to toggle favorite:', error);
     }
-    setLoading(false);
-  }, []);
-
-  const updateFavorites = useCallback((newFavorites: Set<string>) => {
-    setFavorites(newFavorites);
-    try {
-      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(Array.from(newFavorites)));
-    } catch (error) {
-      console.error("Failed to save favorites to localStorage:", error);
-    }
-  }, []);
-
-  const toggleFavorite = useCallback((bookId: string) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(bookId)) {
-      newFavorites.delete(bookId);
-    } else {
-      newFavorites.add(bookId);
-    }
-    updateFavorites(newFavorites);
-  }, [favorites, updateFavorites]);
+  }, [favorites]);
 
   const isFavorite = useCallback((bookId: string) => {
     return favorites.has(bookId);

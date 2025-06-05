@@ -6,8 +6,9 @@ import FilterAndSortSection from '../components/favorites_page/FilterAndSortSect
 import BookListArea from '../components/books_page/BookListArea';
 import PaginationControls from '../components/ui/PaginationControls';
 import { Book, BookFilters, BookSortOption, BookTypeFilterOption } from '../types';
-import { MOCK_BOOKS, ITEMS_PER_PAGE } from '../constants';
+import { ITEMS_PER_PAGE } from '../constants';
 import { useFavorites } from '../hooks/useFavorites';
+import { api } from '../api';
 import { Link } from 'react-router-dom';
 import { RoutePath } from '../types';
 import Button from '../components/ui/Button';
@@ -32,10 +33,16 @@ const FavoritesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
-    const favoriteBookDetails = MOCK_BOOKS.filter(book => favorites.has(book.id));
-    setAllFavoriteBooks(favoriteBookDetails);
-    // Initial filtering/sorting will be triggered by the next useEffect
+    async function fetchFavorites() {
+      setIsLoading(true);
+      try {
+        const data = await api<Book[]>("/users/me/favorites");
+        setAllFavoriteBooks(data);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchFavorites();
   }, [favorites]);
 
   const parseAgeRange = (ageRangeString: string): [number, number] | null => {

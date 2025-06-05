@@ -10,13 +10,13 @@ export interface User {
 }
 
 export interface Child {
-  id:string;
+  id: string;
   name: string;
   age: number;
   avatarUrl?: string;
-  progress: number; // 0-100
-  recentActivity: string;
   interests?: string[];
+  progress?: number; // 0-100
+  recentActivity?: string;
 }
 
 export type ThemeCategory = 'all' | 'self' | 'others' | 'world' | 'thinking';

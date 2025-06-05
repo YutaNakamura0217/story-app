@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import Avatar from '../ui/Avatar';
 import { RoutePath, Child } from '../../types';
 import { UserCircleIcon, CakeIcon, PhotoIcon, SparklesIcon, ArrowUpTrayIcon } from '../../assets/icons';
+import { useChildren } from '../../hooks/useChildren';
 
 const MOCK_AVATARS = [ // Should be in constants, but for simplicity here
   'https://picsum.photos/seed/avatar1/100/100',
@@ -29,6 +30,7 @@ const EditChildForm: React.FC<EditChildFormProps> = ({ child }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { updateChild } = useChildren();
 
   useEffect(() => {
     setName(child.name);
@@ -71,20 +73,21 @@ const EditChildForm: React.FC<EditChildFormProps> = ({ child }) => {
 
     setIsSubmitting(true);
     const updatedChildData = {
-      id: child.id,
       name,
       age: parseInt(age, 10),
       avatarUrl: avatarFile ? `local_file_preview_for_${avatarFile.name}` : avatarUrl,
       interests: interests.split(',').map(interest => interest.trim()).filter(i => i),
     };
 
-    console.log('Updating child:', updatedChildData);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    alert(`${name}ちゃん・くんの情報を更新しました (モック)。`);
-    setIsSubmitting(false);
-    navigate(RoutePath.ChildrenManage);
+    try {
+      await updateChild(child.id, updatedChildData);
+      navigate(RoutePath.ChildrenManage);
+    } catch (error) {
+      console.error('Failed to update child:', error);
+      alert('お子様の情報更新に失敗しました');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

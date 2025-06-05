@@ -36,11 +36,11 @@ const RegistrationForm: React.FC = () => {
   };
 
   const handleRemoveChild = (id: string) => {
-    setChildrenInfo(childrenInfo.filter(child => child.id !== id));
+    setChildrenInfo(childrenInfo.filter((child: ChildData) => child.id !== id));
   };
 
   const handleChildInfoChange = (id: string, field: keyof Omit<ChildData, 'id'>, value: string) => {
-    setChildrenInfo(childrenInfo.map(child => child.id === id ? { ...child, [field]: value } : child));
+    setChildrenInfo(childrenInfo.map((child: ChildData) => child.id === id ? { ...child, [field]: value } : child));
   };
 
   const validate = (): boolean => {
@@ -60,7 +60,7 @@ const RegistrationForm: React.FC = () => {
       newErrors.confirmPassword = 'パスワードが一致しません。';
     }
     if (userType === 'parent') {
-      childrenInfo.forEach((child, index) => {
+      childrenInfo.forEach((child: ChildData, index: number) => {
         if (!child.name.trim()) newErrors[`childName_${index}`] = 'お子様の名前は必須です。';
         if (!child.age.trim()) {
           newErrors[`childAge_${index}`] = 'お子様の年齢は必須です。';
@@ -80,12 +80,27 @@ const RegistrationForm: React.FC = () => {
     if (!validate()) return;
 
     setLoading(true);
-    const payload = {
+    // ★ペイロードの構築を修正
+    const basePayload = {
       name,
       email,
       password,
+      // avatar_url や introduction もスキーマにあれば追加検討
     };
+
+    const payload = userType === 'parent'
+      ? {
+          ...basePayload,
+          children: childrenInfo.map((child: ChildData) => ({
+            name: child.name,
+            age: parseInt(child.age, 10), // バックエンドのスキーマに合わせて数値に変換
+            avatar_url: child.avatarUrl || undefined // 空文字の場合はundefinedにするなど調整
+          }))
+        }
+      : basePayload;
+
     try {
+      // API呼び出しは変更なし
       await api('/auth/register', {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -94,7 +109,24 @@ const RegistrationForm: React.FC = () => {
       navigate(RoutePath.Login);
     } catch (error) {
       console.error('Registration failed:', error);
-      alert('登録に失敗しました');
+      // エラーレスポンスを具体的に表示する改善も検討
+      const errorMessage = error instanceof Error ? error.message : '不明なエラーが発生しました。';
+      try {
+        const errorJson = JSON.parse(errorMessage);
+        if (errorJson.detail) {
+            // FastAPIのバリデーションエラーの場合、詳細を表示
+            if (Array.isArray(errorJson.detail)) {
+                const messages = errorJson.detail.map((err: { loc: string[], msg: string }) => `${err.loc.join('.')} - ${err.msg}`).join('\n');
+                alert(`登録に失敗しました:\n${messages}`);
+            } else {
+                alert(`登録に失敗しました: ${errorJson.detail}`);
+            }
+        } else {
+            alert(`登録に失敗しました: ${errorMessage}`);
+        }
+      } catch (e) {
+          alert(`登録に失敗しました: ${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -108,7 +140,7 @@ const RegistrationForm: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-            {(['parent', 'teacher'] as UserType[]).map((type) => (
+            {(['parent', 'teacher'] as UserType[]).map((type: UserType) => (
               <label
                 key={type}
                 className={`flex-1 p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
@@ -121,7 +153,7 @@ const RegistrationForm: React.FC = () => {
                   value={type}
                   checked={userType === type}
                   onChange={() => setUserType(type)}
-                  className="sr-only" 
+                  className="sr-only"
                 />
                 <div className="flex items-center">
                   {type === 'parent' ? <IdentificationIcon className="w-6 h-6 mr-2 text-amber-500" /> : <AcademicCapIcon className="w-6 h-6 mr-2 text-amber-500" />}
@@ -146,7 +178,7 @@ const RegistrationForm: React.FC = () => {
             label="氏名"
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             placeholder="山田 太郎"
             IconComponent={UserCircleIcon}
             error={errors.name}
@@ -157,7 +189,7 @@ const RegistrationForm: React.FC = () => {
             label="メールアドレス"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             placeholder="your@email.com"
             IconComponent={EnvelopeIcon}
             error={errors.email}
@@ -168,7 +200,7 @@ const RegistrationForm: React.FC = () => {
             label="パスワード (8文字以上)"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             placeholder="********"
             IconComponent={PasswordIcon}
             error={errors.password}
@@ -179,7 +211,7 @@ const RegistrationForm: React.FC = () => {
             label="パスワード確認"
             type="password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
             placeholder="********"
             IconComponent={PasswordIcon}
             error={errors.confirmPassword}
@@ -200,14 +232,14 @@ const RegistrationForm: React.FC = () => {
              <p className="text-xs text-amber-700 mt-1">最大5名まで登録できます。</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {childrenInfo.map((child, index) => (
+            {childrenInfo.map((child: ChildData, index: number) => (
               <div key={child.id} className="p-4 border border-amber-200 rounded-md space-y-4 relative bg-amber-50/50">
                 {childrenInfo.length > 1 && (
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleRemoveChild(child.id)} 
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveChild(child.id)}
                     className="absolute top-2 right-2 !text-red-500 hover:!bg-red-100 px-2 py-1"
                     aria-label="お子様の情報を削除"
                   >
@@ -220,7 +252,7 @@ const RegistrationForm: React.FC = () => {
                   label="お名前"
                   type="text"
                   value={child.name}
-                  onChange={(e) => handleChildInfoChange(child.id, 'name', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleChildInfoChange(child.id, 'name', e.target.value)}
                   placeholder="はなこ"
                   IconComponent={IdentificationIcon}
                   error={errors[`childName_${index}`]}
@@ -231,7 +263,7 @@ const RegistrationForm: React.FC = () => {
                   label="年齢 (0-18歳)"
                   type="number"
                   value={child.age}
-                  onChange={(e) => handleChildInfoChange(child.id, 'age', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleChildInfoChange(child.id, 'age', e.target.value)}
                   placeholder="5"
                   min="0" max="18"
                   IconComponent={CakeIcon}
@@ -243,7 +275,7 @@ const RegistrationForm: React.FC = () => {
                   label="アバターURL (任意)"
                   type="url"
                   value={child.avatarUrl}
-                  onChange={(e) => handleChildInfoChange(child.id, 'avatarUrl', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleChildInfoChange(child.id, 'avatarUrl', e.target.value)}
                   placeholder="https://example.com/avatar.png"
                   IconComponent={PhotoIcon}
                   error={errors[`childAvatarUrl_${index}`]}
@@ -253,7 +285,7 @@ const RegistrationForm: React.FC = () => {
           </CardContent>
         </Card>
       )}
-      
+
       <div className="bg-white p-6 rounded-xl shadow-lg border border-amber-100 space-y-4">
         <div className="flex items-start">
           <input
@@ -261,11 +293,11 @@ const RegistrationForm: React.FC = () => {
             name="terms"
             type="checkbox"
             checked={termsAccepted}
-            onChange={(e) => setTermsAccepted(e.target.checked)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setTermsAccepted(e.target.checked)}
             className="h-4 w-4 text-amber-500 border-amber-300 rounded focus:ring-amber-500 mt-1"
           />
           <label htmlFor="terms" className="ml-2 block text-sm text-amber-700">
-            <a href={RoutePath.Terms} target="_blank" rel="noopener noreferrer" className="font-medium text-amber-600 hover:text-amber-700">利用規約</a> と 
+            <a href={RoutePath.Terms} target="_blank" rel="noopener noreferrer" className="font-medium text-amber-600 hover:text-amber-700">利用規約</a> と
             <a href={RoutePath.Privacy} target="_blank" rel="noopener noreferrer" className="font-medium text-amber-600 hover:text-amber-700 ml-1">プライバシーポリシー</a> に同意します。
           </label>
         </div>

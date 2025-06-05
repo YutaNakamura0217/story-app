@@ -7,19 +7,29 @@ from app.crud.crud_user import get_password_hash, verify_password  # Corrected i
 # Helper function to create user data for tests
 
 
-def create_dummy_user_data(name_suffix: str = "", email_suffix: str = "") -> schemas.UserCreate:
+def create_dummy_user_data(
+    name_suffix: str = "",
+    email_suffix: str = "",
+    children: list[schemas.ChildCreate] | None = None,
+) -> schemas.UserCreate:
     return schemas.UserCreate(
         name=f"Test User {name_suffix}".strip(),
         email=f"testuser{email_suffix}@example.com",
-        password="testpassword123"
+        password="testpassword123",
+        children=children,
     )
 
 # Helper function to create a user directly in the DB for prerequisite data
 
 
-def create_db_user(db: Session, name_suffix: str = "", email_suffix: str = "") -> models.User:
+def create_db_user(
+    db: Session,
+    name_suffix: str = "",
+    email_suffix: str = "",
+    children: list[schemas.ChildCreate] | None = None,
+) -> models.User:
     user_in_schema = create_dummy_user_data(
-        name_suffix=name_suffix, email_suffix=email_suffix)
+        name_suffix=name_suffix, email_suffix=email_suffix, children=children)
     # Use the CRUD function to ensure all related objects (like UserSettings) are created
     created_user = crud.user.create_user(db=db, user=user_in_schema)
     return created_user
@@ -52,6 +62,22 @@ def test_create_user(db_session: Session):
         models.UserSettings.user_id == created_user.id).first()
     assert db_user_settings is not None
     assert db_user_settings.notify_new_recommendations is True  # Default value check
+
+
+def test_create_user_with_children(db_session: Session) -> None:
+    child1 = schemas.ChildCreate(name="Child1", age=5)
+    child2 = schemas.ChildCreate(name="Child2", age=7)
+    user_in_data = create_dummy_user_data(
+        email_suffix="_with_children",
+        children=[child1, child2],
+    )
+
+    created_user = crud.user.create_user(db=db_session, user=user_in_data)
+
+    assert created_user is not None
+    assert len(created_user.children) == 2
+    names = {c.name for c in created_user.children}
+    assert names == {"Child1", "Child2"}
 
 
 def test_get_user_by_id(db_session: Session):

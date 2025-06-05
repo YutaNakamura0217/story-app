@@ -21,10 +21,9 @@ Execute the following steps from the project root unless otherwise noted.
    pip install -r requirements.txt
    ```
 4. Prepare `backend/.env` with database URLs and a `SECRET_KEY` as described in `HOW_TO_RUN_TESTS.md`.
-5. Start the API server from the `backend` directory:
+5. Start the API server from the project root:
    ```bash
-   cd backend
-   uvicorn app.main:app --reload
+   uvicorn backend.app.main:app --reload
    ```
 
 See `HOW_TO_RUN_TESTS.md` for information on running the automated tests.

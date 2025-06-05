@@ -18,8 +18,7 @@ This document outlines how to connect the existing React frontend with the FastA
 3. Install Python dependencies and start the API:
    ```bash
    pip install -r requirements.txt
-   cd backend
-   uvicorn app.main:app --reload
+   uvicorn backend.app.main:app --reload
    ```
 4. In another terminal, install frontend dependencies and run the React app:
    ```bash

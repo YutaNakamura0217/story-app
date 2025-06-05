@@ -87,8 +87,11 @@ This plan should help transition from mock data to live API communication and en
 - Implemented `api` helper and hooks (`useBooks`, `useThemes`) for making authenticated requests.
 - Updated `useAuth` to perform real login against the backend.
 - Books list and theme book pages now load data from the FastAPI API.
+- Book detail page fetches information from the backend and displays similar books.
+- Book reviews can be loaded and submitted using the new `useReviews` hook and `ReviewFormModal`.
+- Favorites are managed globally via `useFavorites`.
 
 ## 9. Remaining Tasks
-- Migrate favorites, children management, reviews, reading progress, and settings pages to use API endpoints.
+- Migrate children management, reading progress, and settings pages to use API endpoints.
 - Add user registration and token refresh handling.
 - Write frontend tests where appropriate.

@@ -5,29 +5,36 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import BookHeroSection from '../components/books/BookHeroSection';
 import BookTabsComponent from '../components/books/BookTabs';
-import { Book, PhilosophyQuestionItem, Review, RoutePath } from '../types';
-import { MOCK_BOOKS, MOCK_BOOK_QUESTIONS, MOCK_BOOK_REVIEWS } from '../constants';
+import { Book, PhilosophyQuestionItem, RoutePath } from '../types';
+import { MOCK_BOOK_QUESTIONS } from '../constants';
+import { api } from '../api';
 import BookCard from '../components/books/BookCard'; 
 
 const BookDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [book, setBook] = useState<Book | null | undefined>(undefined);
   const [questions, setQuestions] = useState<PhilosophyQuestionItem[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [similarBooks, setSimilarBooks] = useState<Book[]>([]);
 
   useEffect(() => {
-    if (id) {
-      const foundBook = MOCK_BOOKS.find(b => b.id === id);
-      setBook(foundBook || null);
-      if (foundBook) {
-        setQuestions(MOCK_BOOK_QUESTIONS); 
-        setReviews(MOCK_BOOK_REVIEWS);   
-        setSimilarBooks(MOCK_BOOKS.filter(b => b.id !== id && (foundBook.relatedBookIds?.includes(b.id) || true)).slice(0,3) );
+    async function fetchData() {
+      if (!id) {
+        setBook(null);
+        return;
       }
-    } else {
-      setBook(null);
+      setBook(undefined);
+      try {
+        const b = await api<Book>(`/books/${id}`);
+        setBook(b);
+        setQuestions(MOCK_BOOK_QUESTIONS);
+        const all = await api<Book[]>(`/books`);
+        setSimilarBooks(all.filter(book => book.id !== id && (b.relatedBookIds?.includes(book.id) || true)).slice(0,3));
+      } catch (err) {
+        console.error('Failed to load book:', err);
+        setBook(null);
+      }
     }
+    fetchData();
   }, [id]);
 
   if (book === undefined) {
@@ -52,7 +59,7 @@ const BookDetailPage: React.FC = () => {
       <main className="flex-grow">
         <BookHeroSection book={book} />
         <div className="container mx-auto max-w-screen-lg px-4 sm:px-10 md:px-20 py-8">
-          <BookTabsComponent book={book} questions={questions} reviews={reviews} />
+          <BookTabsComponent book={book} questions={questions} />
 
           {similarBooks.length > 0 && (
             <section className="mt-12">

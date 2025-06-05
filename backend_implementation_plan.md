@@ -805,17 +805,13 @@ FastAPIルーターを使用してモジュールごとに実装を進めます�
 
 ## 7. 現状の不足点まとめ
 
-リポジトリの実装を確認したところ、モデルとCRUDロジックは大部分が存在するものの、
-ルーターの公開範囲は限定的でした。以下の機能はまだエンドポイントが実装されていま
-せん。
 
-- ユーザー関連 (`/users`): プロフィール更新・設定取得/変更・メール変更・パスワード変
-  更
-- 書籍の登録・更新・削除およびページ・目次管理
-- レビューAPI (`/books/{book_id}/reviews`, `/reviews/{review_id}`)
-- 読書進捗とメモ・ブックマーク管理 (`/users/me/books/{book_id}/progress` など)
-- 学習履歴取得 (`/users/me/learning-history`)
+以前は多くのルートが未実装でしたが、現在は下記のエンドポイントを追加しました。
 
-また、JWTトークンを検証して現在のユーザーを取得する依存関数は未定義のため、各API
-の保護が十分ではありません。上記機能を追加実装する際は、`backend_design.md` の仕様
-と整合するようルーターを作成し、必要な依存関数を整備してください。
+- `/users/me/change-email` と `/users/me/change-password` によるメール・パスワード変更
+- `/books` の作成・更新・削除およびページ・目次管理
+- `/books/{book_id}/reviews` と `/reviews/{review_id}` のレビュー操作
+- `/users/me/books/{book_id}/progress` 以下の読書進捗・ブックマーク・メモ管理
+- `/users/me/learning-history` の学習履歴取得
+
+これらはすべて `get_current_user` 依存性でJWTを検証し、認証ユーザーのみが操作できます。

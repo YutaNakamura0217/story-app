@@ -56,4 +56,32 @@ def update_user_settings(
     db.refresh(updated)
     return updated
 
+
+@router.put("/me/change-email", response_model=schemas.Msg)
+def change_email(
+    email_in: schemas.UserEmailUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+) -> schemas.Msg:
+    if crud_user.get_user_by_email(db, email_in.new_email):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already in use")
+    current_user.email = email_in.new_email
+    db.add(current_user)
+    db.commit()
+    return {"message": "Email updated"}
+
+
+@router.put("/me/change-password", response_model=schemas.Msg)
+def change_password(
+    pw_update: schemas.UserPasswordUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+) -> schemas.Msg:
+    if not crud_user.verify_password(pw_update.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect current password")
+    current_user.hashed_password = crud_user.get_password_hash(pw_update.new_password)
+    db.add(current_user)
+    db.commit()
+    return {"message": "Password changed successfully"}
+
 # Endpoints for /users will be defined here (e.g., favorites)

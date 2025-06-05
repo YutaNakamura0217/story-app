@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from .db import get_db, engine, Base  # db.py から import
 from . import models  # Import models to register them with Base
-from .routes import auth, books, themes, reviews, users, favorites, children  # Import routers
+from .routes import auth, books, themes, reviews, users, favorites, children, progress, history  # Import routers
 from .core.config import settings  # Import settings for API_V1_STR
 
 app = FastAPI(
@@ -35,6 +35,8 @@ app.include_router(
     prefix=f"{settings.API_V1_STR}",
     tags=["Children"],
 )
+app.include_router(progress.router, prefix=f"{settings.API_V1_STR}", tags=["Progress"])
+app.include_router(history.router, prefix=f"{settings.API_V1_STR}", tags=["History"])
 
 
 # ── 開発中だけ: 起動時にテーブル作成しておく ──

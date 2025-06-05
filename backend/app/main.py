@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,15 @@ app = FastAPI(
     version="0.1.0"
 )
 
+# CORSミドルウェアの設定
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # フロントエンドのオリジン
+    allow_credentials=True,
+    allow_methods=["*"],  # すべてのHTTPメソッドを許可
+    allow_headers=["*"],  # すべてのヘッダーを許可
+)
+
 # Include routers
 app.include_router(
     auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
@@ -22,7 +32,8 @@ app.include_router(
     themes.router, prefix=f"{settings.API_V1_STR}/themes", tags=["Themes"])
 # Reviews endpoints define their own paths (e.g. /books/{book_id}/reviews),
 # so we only prepend API_V1_STR here.
-app.include_router(reviews.router, prefix=f"{settings.API_V1_STR}", tags=["Reviews"])
+app.include_router(
+    reviews.router, prefix=f"{settings.API_V1_STR}", tags=["Reviews"])
 app.include_router(
     users.router, prefix=f"{settings.API_V1_STR}/users", tags=["Users"])
 app.include_router(
@@ -35,8 +46,10 @@ app.include_router(
     prefix=f"{settings.API_V1_STR}",
     tags=["Children"],
 )
-app.include_router(progress.router, prefix=f"{settings.API_V1_STR}", tags=["Progress"])
-app.include_router(history.router, prefix=f"{settings.API_V1_STR}", tags=["History"])
+app.include_router(
+    progress.router, prefix=f"{settings.API_V1_STR}", tags=["Progress"])
+app.include_router(
+    history.router, prefix=f"{settings.API_V1_STR}", tags=["History"])
 
 
 # ── 開発中だけ: 起動時にテーブル作成しておく ──

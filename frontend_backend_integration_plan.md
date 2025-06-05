@@ -5,7 +5,7 @@ This document outlines how to connect the existing React frontend with the FastA
 ## 1. Overview
 - **Backend**: FastAPI application located in `backend/` with routers for auth, books, themes, reviews, favorites, children, progress, user settings, and learning history.
 - **Database**: PostgreSQL. Connection settings are loaded from environment variables in `backend/.env`.
-- **Frontend**: React + Vite project located in `frontend/`. Currently uses mock data and localStorage based state.
+- **Frontend**: React + Vite project located in `frontend/`. Books, themes and authentication now call the FastAPI backend. Other features still rely on mock data and localStorage for now.
 
 ## 2. Environment Setup
 1. Install PostgreSQL and create two databases: one for development and one for tests.
@@ -25,6 +25,8 @@ This document outlines how to connect the existing React frontend with the FastA
    ```bash
    cd frontend
    npm install
+   # create .env with the API base URL
+   echo "VITE_API_BASE_URL=http://localhost:8000/api/v1" > .env
    npm run dev
    ```
 
@@ -80,3 +82,13 @@ Integration can proceed page by page to minimize breakage.
 - Frontend can use React Testing Library or similar if needed.
 
 This plan should help transition from mock data to live API communication and ensure both sides work together smoothly.
+
+## 8. Current Status
+- Implemented `api` helper and hooks (`useBooks`, `useThemes`) for making authenticated requests.
+- Updated `useAuth` to perform real login against the backend.
+- Books list and theme book pages now load data from the FastAPI API.
+
+## 9. Remaining Tasks
+- Migrate favorites, children management, reviews, reading progress, and settings pages to use API endpoints.
+- Add user registration and token refresh handling.
+- Write frontend tests where appropriate.

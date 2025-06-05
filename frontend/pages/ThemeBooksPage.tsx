@@ -7,8 +7,9 @@ import FilterAndSortSection from '../components/books_page/FilterAndSortSection'
 import BookListArea from '../components/books_page/BookListArea';
 import PaginationControls from '../components/ui/PaginationControls';
 import { Book, BookFilters, BookSortOption, PhilosophyTheme, RoutePath, BookTypeFilterOption } from '../types';
-import { MOCK_BOOKS, MOCK_THEMES, ITEMS_PER_PAGE } from '../constants';
+import { ITEMS_PER_PAGE } from '../constants';
 import { useFavorites } from '../hooks/useFavorites';
+import { api } from '../api';
 
 const ThemeBooksPage: React.FC = () => {
   const { id: themeId } = useParams<{ id: string }>();
@@ -31,20 +32,21 @@ const ThemeBooksPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-    const foundTheme = MOCK_THEMES.find(theme => theme.id === themeId);
-    setCurrentTheme(foundTheme || null);
-
-    if (foundTheme) {
-      // Filter books that have the theme name in their tags (simplification)
-      const booksForTheme = MOCK_BOOKS.filter(book => 
-        book.tags?.some(tag => tag.toLowerCase().includes(foundTheme.name.toLowerCase()))
-      );
-      setThemeBooks(booksForTheme);
-    } else {
-      setThemeBooks([]);
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const theme = await api<PhilosophyTheme>(`/themes/${themeId}`);
+        setCurrentTheme(theme);
+        const books = await api<Book[]>(`/themes/${themeId}/books`);
+        setThemeBooks(books);
+      } catch {
+        setCurrentTheme(null);
+        setThemeBooks([]);
+      } finally {
+        setIsLoading(false);
+      }
     }
-    // setTimeout(() => setIsLoading(false), 300); // Initial load of theme and its books
+    if (themeId) fetchData();
   }, [themeId]);
 
   const parseAgeRange = (ageRangeString: string): [number, number] | null => {
@@ -101,7 +103,7 @@ const ThemeBooksPage: React.FC = () => {
     }
     setFilteredBooks(books);
     setCurrentPage(1);
-    setTimeout(() => setIsLoading(false), 300);
+    setIsLoading(false);
   }, [themeBooks, filters, sortOption]);
 
   useEffect(() => {

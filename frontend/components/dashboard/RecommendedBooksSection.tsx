@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MOCK_BOOKS } from '../../constants';
+import { useBooks } from '../../hooks/useBooks';
 import BookCard from '../books/BookCard';
 import Button from '../ui/Button';
 import { Link } from 'react-router-dom';
@@ -8,15 +8,16 @@ import { useFavorites } from '../../hooks/useFavorites'; // Import useFavorites
 
 const RecommendedBooksSection: React.FC = () => {
   const [recommendedBooks, setRecommendedBooks] = useState<Book[]>([]);
+  const { books, loading: booksLoading } = useBooks();
   const { favorites, toggleFavorite, loading: favoritesLoading } = useFavorites();
 
   useEffect(() => {
-    // Simulate fetching recommended books - here we just take a slice
-    // In a real app, this might be an API call
-    setRecommendedBooks(MOCK_BOOKS.sort((a,b) => (b.popularityScore || 0) - (a.popularityScore || 0)).slice(0, 4));
-  }, []);
+    if (!booksLoading) {
+      setRecommendedBooks(books.sort((a,b) => (b.popularityScore || 0) - (a.popularityScore || 0)).slice(0, 4));
+    }
+  }, [books, booksLoading]);
 
-  if (favoritesLoading && recommendedBooks.length === 0) { // Show loading only if books aren't ready
+  if ((favoritesLoading || booksLoading) && recommendedBooks.length === 0) { // Show loading only if books aren't ready
     return (
       <section className="mb-8 px-4">
         <div className="flex justify-between items-center pb-4 pt-2">

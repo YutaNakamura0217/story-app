@@ -7,7 +7,9 @@ import FilterAndSortSection from '../components/books_page/FilterAndSortSection'
 import BookListArea from '../components/books_page/BookListArea';
 import PaginationControls from '../components/ui/PaginationControls';
 import { Book, BookFilters, BookSortOption, RoutePath, BookTypeFilterOption } from '../types';
-import { MOCK_BOOKS, MOCK_THEMES, ITEMS_PER_PAGE } from '../constants';
+import { ITEMS_PER_PAGE } from '../constants';
+import { useBooks } from '../hooks/useBooks';
+import { useThemes } from '../hooks/useThemes';
 import { useFavorites } from '../hooks/useFavorites';
 
 const SearchPage: React.FC = () => {
@@ -15,7 +17,8 @@ const SearchPage: React.FC = () => {
   const query = searchParams.get('q') || '';
   const { favorites, toggleFavorite, loading: favoritesLoading } = useFavorites();
 
-  const [allBooks] = useState<Book[]>(MOCK_BOOKS); // Assuming search is across all books
+  const { books: allBooks, loading: booksLoading } = useBooks();
+  const { themes } = useThemes();
   const [searchedBooks, setSearchedBooks] = useState<Book[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [displayedBooks, setDisplayedBooks] = useState<Book[]>([]);
@@ -29,7 +32,7 @@ const SearchPage: React.FC = () => {
   });
   const [sortOption, setSortOption] = useState<BookSortOption>(BookSortOption.Recommended);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Update filters.searchQuery if URL query changes
   useEffect(() => {
@@ -61,7 +64,7 @@ const SearchPage: React.FC = () => {
 
     // Apply additional filters from FilterAndSortSection
     if (filters.themeId) {
-        const selectedTheme = MOCK_THEMES.find(t => t.id === filters.themeId);
+        const selectedTheme = themes.find(t => t.id === filters.themeId);
         if (selectedTheme) {
             books = books.filter(book => book.tags?.some(tag => tag.toLowerCase().includes(selectedTheme.name.toLowerCase())));
         }
@@ -103,11 +106,13 @@ const SearchPage: React.FC = () => {
     setFilteredBooks(books);
     setCurrentPage(1);
     setTimeout(() => setIsLoading(false), 300);
-  }, [allBooks, filters, sortOption]);
+  }, [allBooks, themes, filters, sortOption]);
 
   useEffect(() => {
-    performSearchAndFilter();
-  }, [performSearchAndFilter]);
+    if (!booksLoading) {
+      performSearchAndFilter();
+    }
+  }, [performSearchAndFilter, booksLoading]);
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

@@ -1,30 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PageHeroSection from '../components/themes_page/PageHeroSection';
 import ThemeCategoryNavigation from '../components/themes_page/ThemeCategoryNavigation';
 import ThemeGridArea from '../components/themes_page/ThemeGridArea';
-import { PhilosophyTheme, ThemeCategory } from '../types';
-import { MOCK_THEMES }  from '../constants';
+import { ThemeCategory } from '../types';
+import { useThemes } from '../hooks/useThemes';
 
 const ThemesPage: React.FC = () => {
-  const [allThemes] = useState<PhilosophyTheme[]>(MOCK_THEMES);
+  const { themes, loading } = useThemes();
   const [selectedCategory, setSelectedCategory] = useState<ThemeCategory>('all');
-  const [isLoading, setIsLoading] = useState(false);
 
   const filteredThemes = useMemo(() => {
-    setIsLoading(true); 
     if (selectedCategory === 'all') {
-      return allThemes;
+      return themes;
     }
-    return allThemes.filter(theme => theme.category === selectedCategory);
-  }, [allThemes, selectedCategory]);
-
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 300); // Short delay to show loading state
-    return () => clearTimeout(timer);
-  }, [selectedCategory]);
+    return themes.filter(theme => theme.category === selectedCategory);
+  }, [themes, selectedCategory]);
 
 
   const handleSelectCategory = (category: ThemeCategory) => {
@@ -41,7 +33,7 @@ const ThemesPage: React.FC = () => {
           onSelectCategory={handleSelectCategory}
         />
         <div className="container mx-auto max-w-screen-xl">
-          <ThemeGridArea themes={filteredThemes} isLoading={isLoading} />
+          <ThemeGridArea themes={filteredThemes} isLoading={loading} />
         </div>
       </main>
       <Footer variant="main" />

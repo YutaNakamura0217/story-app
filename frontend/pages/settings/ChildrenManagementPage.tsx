@@ -1,25 +1,27 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MOCK_CHILDREN } from '../../constants'; // Using existing mock children
-import { Child, RoutePath } from '../../types';
+import { RoutePath } from '../../types';
 import ChildManagementCard from '../../components/settings/ChildManagementCard';
 import Button from '../../components/ui/Button';
 import { PlusCircleIcon, IdentificationIcon } from '../../assets/icons';
+import { useChildren } from '../../hooks/useChildren';
 
 const ChildrenManagementPage: React.FC = () => {
   const navigate = useNavigate();
-  // In a real app, children would come from useAuth context or an API call
-  const children: Child[] = MOCK_CHILDREN; 
+  const { children, deleteChild, loading } = useChildren();
 
   const handleAddChild = () => {
     navigate(RoutePath.ChildAdd);
   };
 
-  const handleDeleteChild = (childId: string) => {
-    if (window.confirm("本当にこのお子様の情報を削除しますか？この操作は元に戻せません。")) {
-      console.log(`Deleting child with ID: ${childId}`);
-      // Add logic to update state/API
-      alert("お子様の情報が削除されました (モック)。");
+  const handleDeleteChild = async (childId: string) => {
+    if (window.confirm('本当にこのお子様の情報を削除しますか？この操作は元に戻せません。')) {
+      try {
+        await deleteChild(childId);
+      } catch (err) {
+        console.error('Failed to delete child:', err);
+        alert('削除に失敗しました');
+      }
     }
   };
 
@@ -39,13 +41,17 @@ const ChildrenManagementPage: React.FC = () => {
         </Button>
       </div>
 
-      {children.length > 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : children.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {children.map((child) => (
-            <ChildManagementCard 
-              key={child.id} 
-              child={child} 
-              onDelete={() => handleDeleteChild(child.id)} 
+            <ChildManagementCard
+              key={child.id}
+              child={child}
+              onDelete={() => handleDeleteChild(child.id)}
             />
           ))}
         </div>

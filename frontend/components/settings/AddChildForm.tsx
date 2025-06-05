@@ -5,6 +5,7 @@ import Button from '../ui/Button';
 import Avatar from '../ui/Avatar';
 import { RoutePath } from '../../types';
 import { UserCircleIcon, CakeIcon, PhotoIcon, SparklesIcon, ArrowUpTrayIcon } from '../../assets/icons';
+import { useChildren } from '../../hooks/useChildren';
 
 const MOCK_AVATARS = [
   'https://picsum.photos/seed/avatar1/100/100',
@@ -25,6 +26,7 @@ const AddChildForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { addChild } = useChildren();
 
   const handleAvatarFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -65,13 +67,15 @@ const AddChildForm: React.FC = () => {
       interests: interests.split(',').map(interest => interest.trim()).filter(i => i),
     };
 
-    console.log('Adding child:', childData);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    alert(`${name}ちゃん・くんの情報を追加しました (モック)。`);
-    setIsSubmitting(false);
-    navigate(RoutePath.ChildrenManage);
+    try {
+      await addChild(childData);
+      navigate(RoutePath.ChildrenManage);
+    } catch (error) {
+      console.error('Failed to add child:', error);
+      alert('お子様の追加に失敗しました');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

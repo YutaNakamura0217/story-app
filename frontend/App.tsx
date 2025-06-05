@@ -18,6 +18,7 @@ import QuestionAnswerPage from './pages/QuestionAnswerPage'; // Import QuestionA
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider, useAuth } from './hooks/useAuth'; 
 import { FavoritesProvider } from './hooks/useFavorites';
+import { ChildrenProvider } from './hooks/useChildren';
 import { RoutePath } from './types';
 
 // Settings Page Imports
@@ -55,8 +56,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <FavoritesProvider> 
-        <HashRouter>
+      <FavoritesProvider>
+        <ChildrenProvider>
+          <HashRouter>
           <Routes>
             {/* Public Routes */}
             <Route path={RoutePath.Login} element={<LoginPage />} />
@@ -144,7 +146,8 @@ const App: React.FC = () => {
             />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
-        </HashRouter>
+          </HashRouter>
+        </ChildrenProvider>
       </FavoritesProvider>
     </AuthProvider>
   );

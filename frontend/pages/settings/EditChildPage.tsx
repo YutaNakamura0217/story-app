@@ -3,22 +3,21 @@ import { useNavigate, useParams } from 'react-router-dom';
 import EditChildForm from '../../components/settings/EditChildForm';
 import Button from '../../components/ui/Button';
 import { RoutePath, Child } from '../../types';
-import { MOCK_CHILDREN } from '../../constants';
+import { useChildren } from '../../hooks/useChildren';
 import { ArrowUturnLeftIcon } from '../../assets/icons';
 
 const EditChildPage: React.FC = () => {
   const navigate = useNavigate();
   const { id: childId } = useParams<{ id: string }>();
+  const { children, loading } = useChildren();
   const [childToEdit, setChildToEdit] = useState<Child | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (childId) {
-      const foundChild = MOCK_CHILDREN.find(c => c.id === childId);
-      setChildToEdit(foundChild || null);
+      const found = children.find(c => c.id === childId);
+      setChildToEdit(found || null);
     }
-    setLoading(false);
-  }, [childId]);
+  }, [childId, children]);
 
   if (loading) {
     return <div className="text-center py-10">お子様の情報を読み込み中...</div>;

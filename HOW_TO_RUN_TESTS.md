@@ -46,11 +46,20 @@ SECRET_KEY=your_secret_key
 
 ## 3. テストの実行
 
-テストは `backend` ディレクトリで実行します。ディレクトリを移動して `pytest` を実行してください。
+テスト用の `.env` は `backend/.env` に配置します。`backend/app/core/config.py` が
+自動的にこのファイルを読み込むため、`pytest` をどのディレクトリから実行しても設定が適用されます。
+
+テストは `backend` ディレクトリで実行するのが簡単ですが、プロジェクトルートからでも `TESTING=true` を指定して実行できます。
 
 ```bash
 cd backend
 pytest
+```
+
+または
+
+```bash
+TESTING=true pytest -q backend
 ```
 
 `pytest` コマンドを実行すると、`backend/tests` 以下のテストが自動的に収集されます。  

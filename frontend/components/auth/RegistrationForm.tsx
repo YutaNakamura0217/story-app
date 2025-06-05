@@ -6,6 +6,7 @@ import Button from '../ui/Button';
 import { RoutePath } from '../../types';
 import { UserCircleIcon, EnvelopeIcon, LockClosedIcon as PasswordIcon, AcademicCapIcon, IdentificationIcon, CakeIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import Card, { CardHeader, CardContent, CardFooter } from '../ui/Card';
+import { api } from '../../api';
 
 type UserType = 'parent' | 'teacher';
 
@@ -79,20 +80,24 @@ const RegistrationForm: React.FC = () => {
     if (!validate()) return;
 
     setLoading(true);
-    console.log('Registration Data:', {
-      userType,
+    const payload = {
       name,
       email,
       password,
-      children: userType === 'parent' ? childrenInfo.map(c => ({...c, age: parseInt(c.age, 10)})) : [],
-      termsAccepted,
-    });
-
-    setTimeout(() => {
-      setLoading(false);
+    };
+    try {
+      await api('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
       alert('会員登録が完了しました！ログインページに移動します。');
       navigate(RoutePath.Login);
-    }, 1500);
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('登録に失敗しました');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -1,4 +1,5 @@
 from typing import Optional
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,11 +24,13 @@ class Settings(BaseSettings):
     # Environment mode
     TESTING: bool = False  # Can be overridden by .env e.g. TESTING=true
 
+    BASE_DIR: Path = Path(__file__).resolve().parents[2]
+
     model_config = SettingsConfigDict(
-        # Assumes .env is in the CWD (e.g., backend/ when running pytest from backend/)
-        env_file=".env",
+        # Load environment variables from backend/.env regardless of CWD
+        env_file=BASE_DIR / ".env",
         extra='ignore',
-        case_sensitive=False
+        case_sensitive=False,
     )
 
 

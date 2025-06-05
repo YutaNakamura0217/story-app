@@ -85,6 +85,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8, json_schema_extra={
                           "example": "securepassword123"})
+    children: Optional[List["ChildCreate"]] = None
 
 
 class UserUpdate(BaseModel):

@@ -44,6 +44,33 @@ def test_user_registration(client: TestClient, db_session: Session) -> None:
     # Verify token data if possible (optional, requires token decoding logic for test)
 
 
+def test_user_registration_with_children(client: TestClient, db_session: Session) -> None:
+    unique_email = "regchild@example.com"
+    resp = client.post(
+        f"{settings.API_V1_STR}/auth/register",
+        json={
+            "email": unique_email,
+            "password": test_user_password,
+            "name": "Parent User",
+            "children": [
+                {"name": "Kid1", "age": 6},
+                {"name": "Kid2", "age": 8},
+            ],
+        },
+    )
+    assert resp.status_code == 200
+    token = resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    child_resp = client.get(
+        f"{settings.API_V1_STR}/users/me/children", headers=headers
+    )
+    assert child_resp.status_code == 200
+    children = child_resp.json()
+    assert len(children) == 2
+    names = {c["name"] for c in children}
+    assert names == {"Kid1", "Kid2"}
+
+
 def test_register_existing_user(client: TestClient, db_session: Session) -> None:
     """
     Test attempting to register a user with an email that already exists.

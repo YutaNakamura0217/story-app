@@ -46,6 +46,17 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.flush()  # Flush to get db_user.id
     db.refresh(db_user)
 
+    # Create children if provided
+    if user.children:
+        for child_in in user.children:
+            db_child = models.Child(
+                **child_in.model_dump(),
+                user_id=db_user.id,
+            )
+            db.add(db_child)
+            db.flush()
+            db.refresh(db_child)
+
     # Create default user settings
     db_user_settings = models.UserSettings(user_id=db_user.id)
     db.add(db_user_settings)

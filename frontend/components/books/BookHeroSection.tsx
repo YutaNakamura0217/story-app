@@ -1,5 +1,5 @@
 
-import React, {useState} from 'react';
+import React from 'react';
 import { Book } from '../../types';
 import BookCover from './BookCover';
 import Button from '../ui/Button';
@@ -7,6 +7,7 @@ import Badge from '../ui/Badge';
 import { HeartIcon, ShareIcon, DownloadIcon, SparklesIcon } from '../../assets/icons';
 import { Link } from 'react-router-dom';
 import { RoutePath } from '../../types';
+import { useFavorites } from '../../hooks/useFavorites';
 
 
 interface BookHeroSectionProps {
@@ -14,11 +15,7 @@ interface BookHeroSectionProps {
 }
 
 const BookHeroSection: React.FC<BookHeroSectionProps> = ({ book }) => {
-  const [isFavorited, setIsFavorited] = useState(false); 
-
-  const handleFavoriteToggle = () => {
-    setIsFavorited(!isFavorited);
-  };
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   return (
     <div className="bg-gradient-to-b from-amber-100 via-amber-50 to-amber-50 py-8 md:py-12">
@@ -48,14 +45,14 @@ const BookHeroSection: React.FC<BookHeroSectionProps> = ({ book }) => {
                 この本を読む
               </Button>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={handleFavoriteToggle} 
-                  aria-label={isFavorited ? "お気に入りから削除" : "お気に入りに追加"}
-                  className={`rounded-full ${isFavorited ? "!border-red-500 !text-red-500 hover:!bg-red-500/10" : "!border-amber-500 !text-amber-500 hover:!bg-amber-500/10"}`}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => toggleFavorite(book.id)}
+                  aria-label={isFavorite(book.id) ? 'お気に入りから削除' : 'お気に入りに追加'}
+                  className={`rounded-full ${isFavorite(book.id) ? '!border-red-500 !text-red-500 hover:!bg-red-500/10' : '!border-amber-500 !text-amber-500 hover:!bg-amber-500/10'}`}
                 >
-                  <HeartIcon className={`w-5 h-5 ${isFavorited ? 'fill-red-500' : ''}`} />
+                  <HeartIcon className={`w-5 h-5 ${isFavorite(book.id) ? 'fill-red-500' : ''}`} />
                 </Button>
                 <Button variant="outline" size="lg" aria-label="共有する" className="rounded-full !border-amber-500 !text-amber-500 hover:!bg-amber-500/10">
                   <ShareIcon />

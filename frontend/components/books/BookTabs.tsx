@@ -8,7 +8,9 @@ import PhilosophyQuestion from './PhilosophyQuestion';
 import Button from '../ui/Button';
 import Avatar from '../ui/Avatar';
 import Badge from '../ui/Badge';
-import StartDiscussionModal from './StartDiscussionModal'; 
+import StartDiscussionModal from './StartDiscussionModal';
+import ReviewFormModal from './ReviewFormModal';
+import { useReviews } from '../../hooks/useReviews';
 import { ChatBubbleLeftRightIcon, ArrowRightIcon, PlusIcon } from '../../assets/icons';
 
 
@@ -23,7 +25,6 @@ const StarIcon: React.FC<{ className?: string, solid?: boolean }> = ({ className
 interface BookTabsProps {
   book: Book;
   questions: PhilosophyQuestionItem[];
-  reviews: Review[];
 }
 
 const OverviewContent: React.FC<{ book: Book }> = ({ book }) => (
@@ -63,7 +64,7 @@ const QuestionsContent: React.FC<{ bookId: string, questions: PhilosophyQuestion
 );
 
 
-const ReviewsContent: React.FC<{ reviews: Review[], bookId: string }> = ({ reviews, bookId }) => {
+const ReviewsContent: React.FC<{ reviews: Review[]; loading: boolean; onAdd: () => void }> = ({ reviews, loading, onAdd }) => {
   const averageRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
   return (
     <div>
@@ -82,10 +83,14 @@ const ReviewsContent: React.FC<{ reviews: Review[], bookId: string }> = ({ revie
              <p className="text-amber-700 text-sm mt-1">まだレビューがありません。</p>
           )}
         </div>
-        <Button variant="primary" className="mt-4 sm:mt-0 rounded-full">レビューを書く</Button>
+        <Button variant="primary" className="mt-4 sm:mt-0 rounded-full" onClick={onAdd}>レビューを書く</Button>
       </div>
-      
-      {reviews.length > 0 && (
+
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : reviews.length > 0 ? (
         <div className="space-y-6">
           {reviews.map(review => (
             <div key={review.id} className="p-4 border border-amber-100 rounded-lg bg-white">
@@ -105,7 +110,7 @@ const ReviewsContent: React.FC<{ reviews: Review[], bookId: string }> = ({ revie
             </div>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -189,10 +194,23 @@ const DiscussionsContent: React.FC<{ bookId: string }> = ({ bookId }) => {
 };
 
 
-const BookTabsComponent: React.FC<BookTabsProps> = ({ book, questions, reviews }) => {
+const BookTabsComponent: React.FC<BookTabsProps> = ({ book, questions }) => {
+  const { reviews, loading, addReview } = useReviews(book.id);
+  const [isReviewModalOpen, setReviewModalOpen] = useState(false);
+
+  const handleAddReview = async (rating: number, text: string) => {
+    try {
+      await addReview(rating, text);
+    } catch (err) {
+      console.error('Failed to add review:', err);
+      alert('レビューの投稿に失敗しました');
+    }
+  };
+
   return (
-    <Tabs 
-      tabPanelClassName="min-h-[300px]" 
+    <>
+    <Tabs
+      tabPanelClassName="min-h-[300px]"
       tabListClassName="border-b-amber-200"
     >
       <Tab label="概要" activeClassName="border-amber-500 text-amber-600" inactiveClassName="border-transparent text-amber-700 hover:text-amber-800 hover:border-amber-300">
@@ -202,12 +220,18 @@ const BookTabsComponent: React.FC<BookTabsProps> = ({ book, questions, reviews }
         <QuestionsContent bookId={book.id} questions={questions} />
       </Tab>
       <Tab label={`レビュー (${reviews.length})`} activeClassName="border-amber-500 text-amber-600" inactiveClassName="border-transparent text-amber-700 hover:text-amber-800 hover:border-amber-300">
-        <ReviewsContent reviews={reviews} bookId={book.id} />
+        <ReviewsContent reviews={reviews} loading={loading} onAdd={() => setReviewModalOpen(true)} />
       </Tab>
       <Tab label="ディスカッション" activeClassName="border-amber-500 text-amber-600" inactiveClassName="border-transparent text-amber-700 hover:text-amber-800 hover:border-amber-300">
         <DiscussionsContent bookId={book.id} />
       </Tab>
-    </Tabs>
+      </Tabs>
+      <ReviewFormModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        onSubmit={handleAddReview}
+      />
+    </>
   );
 };
 

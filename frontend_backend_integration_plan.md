@@ -92,6 +92,5 @@ This plan should help transition from mock data to live API communication and en
 - Favorites are managed globally via `useFavorites`.
 
 ## 9. Remaining Tasks
-- Migrate children management, reading progress, and settings pages to use API endpoints.
-- Add user registration and token refresh handling.
-- Write frontend tests where appropriate.
+- ユーザー登録時のエラーハンドリングやトークン更新処理の強化
+- フロントエンドのテスト整備（React Testing Library など）の拡充

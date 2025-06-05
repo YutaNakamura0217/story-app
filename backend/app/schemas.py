@@ -451,5 +451,6 @@ class PasswordResetSchema(BaseModel):
 
 # Update forward refs for Pydantic models that reference each other before definition
 Token.model_rebuild()
-# Add other .model_rebuild() if circular dependencies arise with more complex nesting
-# For now, UserRead in Token is the main one.
+# Ensure UserCreate resolves the "ChildCreate" forward reference used for nested registration
+UserCreate.model_rebuild()
+# Add other .model_rebuild() calls if additional circular dependencies arise

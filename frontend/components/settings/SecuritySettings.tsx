@@ -2,6 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import { LockClosedIcon, GoogleIcon, TwitterIcon } from '../../assets/icons';
+import { api } from '../../api';
 
 const SecuritySettings: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -26,18 +27,21 @@ const SecuritySettings: React.FC = () => {
     }
 
     setIsPasswordSubmitting(true);
-    console.log('Changing password...');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    // Simulate API response
-    if (currentPassword === "wrongpassword") {
-        setPasswordError('現在のパスワードが正しくありません。');
-    } else {
-        setPasswordSuccess('パスワードが正常に変更されました。');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmNewPassword('');
+    try {
+      await api('/users/me/change-password', {
+        method: 'PUT',
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+      });
+      setPasswordSuccess('パスワードが正常に変更されました。');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err: any) {
+      console.error(err);
+      setPasswordError('現在のパスワードが正しくない可能性があります');
+    } finally {
+      setIsPasswordSubmitting(false);
     }
-    setIsPasswordSubmitting(false);
   };
 
   return (

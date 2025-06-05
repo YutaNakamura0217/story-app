@@ -3,6 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import { EnvelopeIcon } from '../../assets/icons';
+import { api } from '../../api';
 
 const AccountInfoSettings: React.FC = () => {
   const { user } = useAuth();
@@ -28,22 +29,21 @@ const AccountInfoSettings: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    console.log('Attempting to change email to:', newEmail);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Mock success/failure
-    if (newEmail === "taken@example.com") {
-        setError('このメールアドレスは既に使用されています。');
-    } else {
-        setSuccessMessage('メールアドレス変更のリクエストを送信しました。確認メールをご確認ください。');
-        // In a real app, you'd update the user context or re-fetch user data after verification
-        // For mock, we might update currentEmail if it was a direct change without verification
-        // setCurrentEmail(newEmail); // For mock direct update
-        setNewEmail('');
-        setConfirmEmail('');
+    try {
+      await api('/users/me/change-email', {
+        method: 'PUT',
+        body: JSON.stringify({ new_email: newEmail })
+      });
+      setSuccessMessage('メールアドレスを変更しました');
+      setCurrentEmail(newEmail);
+      setNewEmail('');
+      setConfirmEmail('');
+    } catch (err: any) {
+      console.error(err);
+      setError('変更に失敗しました');
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (

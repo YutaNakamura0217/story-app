@@ -4,7 +4,12 @@ from sqlalchemy.orm import Session
 
 from backend.app import schemas, models
 from backend.app.crud import crud_user
-from backend.app.core.security import create_access_token, get_password_hash, verify_password
+from backend.app.core.security import (
+    create_access_token,
+    get_password_hash,
+    verify_password,
+    get_current_user,
+)
 from backend.app.db import get_db
 # For token expiration, if needed directly
 from backend.app.core.config import settings
@@ -168,3 +173,18 @@ def reset_password(
     # crud_user.update_password(db, user_id=user.id, new_hashed_password=hashed_password) # Fictional
 
     return {"message": "Password reset successfully (mocked)."}
+
+
+@router.post("/refresh", response_model=schemas.Token)
+def refresh_access_token(
+    current_user: models.User = Depends(get_current_user),
+) -> schemas.Token:
+    """Issue a new access token for the current user."""
+    access_token = create_access_token(
+        data={"sub": current_user.email, "user_id": str(current_user.id)}
+    )
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": schemas.UserRead.model_validate(current_user),
+    }

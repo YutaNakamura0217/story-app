@@ -8,6 +8,7 @@ import ReadingTools from '../components/reading_page/ReadingTools';
 import SidePanel from '../components/reading_page/SidePanel';
 import PhilosophyQuestionPopup from '../components/reading_page/PhilosophyQuestionPopup';
 import CompletionModal from '../components/reading_page/CompletionModal';
+import { useProgress } from '../hooks/useProgress';
 
 const ReadingPage: React.FC = () => {
   const { id: bookId } = useParams<{ id: string }>();
@@ -26,6 +27,24 @@ const ReadingPage: React.FC = () => {
   const [showPhilosophyQuestionPopup, setShowPhilosophyQuestionPopup] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false); // Mock audio state
+
+  const {
+    progress,
+    loading: progressLoading,
+    updatePage,
+    addBookmark: apiAddBookmark,
+    removeBookmark: apiRemoveBookmark,
+    addNote: apiAddNote,
+    deleteNote: apiDeleteNote,
+  } = useProgress(bookId!);
+
+  useEffect(() => {
+    if (progress) {
+      setCurrentPageNumber(progress.currentPage);
+      setBookmarks(new Set(progress.bookmarks.map(b => b.pageNumber)));
+      setNotes(progress.notes.map(n => ({ pageNumber: n.pageNumber, text: n.text, date: n.id })));
+    }
+  }, [progress]);
 
   useEffect(() => {
     const foundBook = MOCK_BOOKS.find(b => b.id === bookId);
@@ -77,19 +96,24 @@ const ReadingPage: React.FC = () => {
 
   const handleNextPage = () => {
     if (currentPageNumber < totalPages) {
-      setCurrentPageNumber(prev => prev + 1);
+      const next = currentPageNumber + 1;
+      setCurrentPageNumber(next);
+      updatePage(next);
     }
   };
 
   const handlePreviousPage = () => {
     if (currentPageNumber > 1) {
-      setCurrentPageNumber(prev => prev - 1);
+      const prevPage = currentPageNumber - 1;
+      setCurrentPageNumber(prevPage);
+      updatePage(prevPage);
     }
   };
   
   const goToPage = (page: number) => {
      if (page >= 1 && page <= totalPages) {
-      setCurrentPageNumber(page);
+     setCurrentPageNumber(page);
+     updatePage(page);
       setIsSidePanelOpen(false); // Close panel on TOC navigation
     }
   }
@@ -98,24 +122,32 @@ const ReadingPage: React.FC = () => {
 
   const toggleBookmark = () => {
     setBookmarks(prev => {
-      const newBookmarks = new Set(prev);
-      if (newBookmarks.has(currentPageNumber)) {
-        newBookmarks.delete(currentPageNumber);
+      const newSet = new Set(prev);
+      if (newSet.has(currentPageNumber)) {
+        apiRemoveBookmark(currentPageNumber);
+        newSet.delete(currentPageNumber);
       } else {
-        newBookmarks.add(currentPageNumber);
+        apiAddBookmark(currentPageNumber);
+        newSet.add(currentPageNumber);
       }
-      return newBookmarks;
+      return newSet;
     });
   };
 
   const addNote = (text: string) => {
     if (text.trim()) {
-      setNotes(prev => [...prev, { pageNumber: currentPageNumber, text, date: new Date().toISOString() }]);
+      apiAddNote(currentPageNumber, text).then(note => {
+        setNotes(prev => [...prev, { pageNumber: note.pageNumber, text: note.text, date: note.id }]);
+      });
     }
   };
-  
+
   const deleteNote = (noteDate: string) => {
-      setNotes(prev => prev.filter(note => !(note.pageNumber === currentPageNumber && note.date === noteDate)));
+      const note = notes.find(n => n.date === noteDate && n.pageNumber === currentPageNumber);
+      if (note) {
+        apiDeleteNote(note.date);
+      }
+      setNotes(prev => prev.filter(n => !(n.pageNumber === currentPageNumber && n.date === noteDate)));
   };
 
   const openSidePanel = (tab: SidePanelTab = 'toc') => {

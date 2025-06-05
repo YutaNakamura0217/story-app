@@ -21,8 +21,16 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   // Check for stored session on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('authUser');
-    if (storedUser) {
+    const token = localStorage.getItem('authToken');
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser));
+      api<{ access_token: string; user: User }>('/auth/refresh', { method: 'POST' })
+        .then(data => {
+          localStorage.setItem('authToken', data.access_token);
+          localStorage.setItem('authUser', JSON.stringify(data.user));
+          setUser(data.user);
+        })
+        .catch(() => logout());
     }
     setLoading(false); // Finished loading
   }, []);

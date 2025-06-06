@@ -577,21 +577,18 @@ Authentication: Assumes JWT-based authentication. Endpoints marked "Protected" r
 
 This document provides a foundational structure. Specific details for each endpoint (e.g., exact Pydantic models for request/response) would be further defined during backend development.
 
-## 5. 未実装機能の概要
+## 5. 実装状況まとめ
 
-2024年5月時点のリポジトリを確認したところ、下記のAPIルートはまだ実装されていませ
-ん。モデルやCRUD処理は存在しますが、FastAPI ルーターが用意されておらずフロントエ
-ンドから利用できない状態です。
+初版では多くのエンドポイントが未実装と記載していましたが、現在のコードベースでは以下の機能がすべて FastAPI ルーターとして提供されています。
 
-- `/users` 以下のプロフィール更新、設定変更、メール・パスワード変更
-- `/users/me/children` に関するCRUD
-- `/themes` の取得・一覧
+- ユーザー情報の更新や設定変更、メール・パスワード変更
+- `/users/me/children` による子供管理 CRUD
+- `/themes` でのテーマ取得
 - `/books` の作成・更新・削除、ページ／TOC 管理
-- `/books/{id}/reviews` や `/reviews/{id}` のレビュー操作
-- `/users/me/favorites` などお気に入り管理
-- `/users/me/books/{book_id}/progress` など読書進捗・ブックマーク・メモ関連
+- 書籍レビュー関連 (`/books/{id}/reviews`, `/reviews/{id}`)
+- `/users/me/favorites` でのお気に入り管理
+- `/users/me/books/{book_id}/progress` 以下の読書進捗・ブックマーク・メモ操作
 - `/users/me/learning-history` の学習履歴取得
-- JWT検証用依存関数 (`get_current_user`) をはじめとした認証ミドルウェア
+- `get_current_user` による JWT 認証依存性
 
-これらのエンドポイントを追加することで、設計ドキュメントで想定した全機能を利用で
-きるようになります。
+このように設計ドキュメントで想定していた主要機能はすべて利用可能となっています。今後は追加要件や改善点に応じて適宜更新してください。
